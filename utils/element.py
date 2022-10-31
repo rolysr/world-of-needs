@@ -1,12 +1,12 @@
 import uuid
 
 class Object:
-    """This represents any physical object that can appear in an Environment.
-    You subclass Thing to get the things you want. Each thing can have a
+    """This represents any physical element that can appear in an Environment.
+    You subclass Object to get the things you want. Each obj can have a
     .__name__  slot (used for output only)."""
 
     def __init__(self):
-        self.id = uuid.uuid1() # Random unique identifier to an object
+        self.id = uuid.uuid1() # Random unique identifier to an element
 
     def __repr__(self):
         return '<{}>'.format(getattr(self, '__name__', self.__class__.__name__))
