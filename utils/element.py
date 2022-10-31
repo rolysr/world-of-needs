@@ -1,8 +1,8 @@
 import uuid
 
-class Object:
+class Element:
     """This represents any physical element that can appear in an Environment.
-    You subclass Object to get the things you want. Each obj can have a
+    You subclass Element to get the things you want. Each elem can have a
     .__name__  slot (used for output only)."""
 
     def __init__(self):
