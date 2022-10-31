@@ -38,5 +38,3 @@ def lognorm(sigma):
 
 def pareto(k):
     return stats.pareto(k)
-
-# Function to facilitate calculation using random distributions
