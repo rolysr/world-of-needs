@@ -1,4 +1,4 @@
-from utils.probabilities.random_variables import *
+from utils.random_variables import *
 
 if __name__ == "__main__":
     pass
