@@ -1,5 +1,4 @@
-from queue import PriorityQueue
-from utils.generator.destination_generators.destination_offerts_generator import generate_destination_offerts
+from utils.generator.destination_generators.destination_generator import generate_destination_agents
 from utils.generator.environment_schedule_generator import generate_environment_schedule
 from utils.generator.graph_generator import *
 from utils.generator.human_generators.human_generator import generate_human_agents
@@ -9,10 +8,10 @@ class Environment:
         Abstract class representing an Environment
     """
 
-    def __init__(self, number_human_agents, number_destination_agents): # Class constructor
+    def __init__(self, number_human_agents, number_destination_agents, number_of_needs): # Class constructor
         # Generate random agents
-        self.human_agents = generate_human_agents(number_human_agents)
-        self.destination_agents = generate_destination_offerts(number_destination_agents)
+        self.human_agents = generate_human_agents(number_human_agents, number_of_needs)
+        self.destination_agents = generate_destination_agents(number_destination_agents, number_of_needs)
 
         # The graph to represent the environment internally
         # Here we generate a graph and locate generated humans and destinations on it
