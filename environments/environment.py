@@ -1,3 +1,4 @@
+from queue import PriorityQueue
 from utils.generator.destination_generators.destination_offerts_generator import generate_destination_offerts
 from utils.generator.environment_schedule_generator import generate_environment_schedule
 from utils.generator.graph_generator import *

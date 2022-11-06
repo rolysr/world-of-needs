@@ -1,3 +1,5 @@
+from random import randrange
+from matplotlib.style import available
 from utils.graph.graph import Graph
 from utils.graph.node import Node
 from utils.generator.street_length_generator import generate_street_length
@@ -43,10 +45,39 @@ def generate_graph(human_agents, destination_agents):
             
             final_nodes.append(node[i][j]) # add node to the final list
 
-    return Graph(nodes)
+    # create the graph
+    graph = Graph(final_nodes)
+
+    # locate humans and destinations on the graph
+    elems = human_agents + destination_agents
+    graph = locate_in_graph(graph, elems)
+
+    return graph
 
     
     
 def valid_position_in_matrix(rows, columns, x, y):
-    """Method for determining if a pair (x, y) is contained in a matrix of rows x columns size"""
+    """
+        Method for determining if a pair (x, y) is contained in a matrix of rows x columns size
+    """
     return x >= 0 and y >= 0 and x < rows and y < columns
+
+def locate_in_graph(graph, elems):
+    """
+        Locates randomly a group of elems in a graph
+    """
+    available_node_indexes = []
+    for i, node in enumerate(graph.nodes): # check for available nodes
+        if node.value == []:
+            available_node_indexes.append(i)
+
+    if len(elems) > len(available_node_indexes): # no space for locating nodes then return given graph
+        return graph
+
+    # locate elems in available positions
+    for elem in elems:
+        rand_index = randrange(0, len(available_node_indexes)) # select a random available position
+        graph.nodes[rand_index] = elem # locate elem
+        available_node_indexes.remove(rand_index) # update available indexes
+
+    return graph 
