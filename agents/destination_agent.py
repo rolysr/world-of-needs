@@ -10,8 +10,7 @@ class DestinationAgent(Agent):
     """
 
     def __init__(self, number_of_needs): # class constructor
-        self.offerts = generate_destination_offerts(number_of_needs) # The needs this can satisfy by offerts. (need_id, need_available_amout)
+        self.offerts = generate_destination_offerts(number_of_needs) # The needs this can satisfy by offerts. (need_id, need_available_amout, price)
         self.attention_time = generate_destination_attention_time() # Attention time for a given client is Poisson-distributed
         self.total_time_working_in_minutes = generate_destination_working_time() # Total time the agent works
-        self.elapsed_time_working = 0 # Start time      
-
+        self.elapsed_time_working = 0 # Start time     

@@ -8,3 +8,5 @@ class Agent:
     def __init__(self):
         self.id = uuid1() # Unique identifier
         
+    def __eq__(self, other) -> bool:
+        return self.id == other.id

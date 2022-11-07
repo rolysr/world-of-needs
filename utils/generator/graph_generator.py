@@ -77,7 +77,7 @@ def locate_in_graph(graph, elems):
     # locate elems in available positions
     for elem in elems:
         rand_index = randrange(0, len(available_node_indexes)) # select a random available position
-        graph.nodes[rand_index] = elem # locate elem
+        graph.nodes[rand_index].values.append(elem) # locate elem
         available_node_indexes.remove(rand_index) # update available indexes
 
     return graph 
