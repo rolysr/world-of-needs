@@ -1,3 +1,4 @@
+from queue import PriorityQueue
 from random import randrange
 
 
@@ -12,7 +13,8 @@ def generate_human_needs(number_of_needs):
     # select random needs
     for i in range(number_of_goal_needs):
         rand_index = randrange(0, len(goal_need_indexes))
-        goal_needs.append(rand_index, rand_index, 5) # a goal need is a tuple (priority, need_id, needed_amount)
+        goal_needs.append((rand_index, rand_index, 5)) # a goal need is a tuple (priority, need_id, needed_amount)
         goal_need_indexes.remove(rand_index)
 
+    goal_needs.sort()
     return goal_needs
