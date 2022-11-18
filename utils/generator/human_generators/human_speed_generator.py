@@ -1,6 +1,6 @@
 def generate_human_speed():
     """
         A method for generating human speed. 
-        This is given in m/s
+        This is given in m/min
     """
-    return 1
+    return 60

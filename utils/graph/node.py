@@ -16,3 +16,9 @@ class Node:
         for adjacent in self.adjacents:
             response += " Node: id: {0}, edge length: {1}\n".format(adjacent[0].id,adjacent[1])
         return response
+    
+    def __hash__(self) -> int:
+        return self.id
+    
+    def __lt__(self, other) -> bool:
+        return self.id<other.id

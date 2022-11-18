@@ -1,14 +1,17 @@
 from utils.graph.graph import Graph
 from utils.graph.node import Node
 from utils.generator.street_length_generator import generate_street_length
+from math import *
 
+#up to add to a settings file
+DENSITY_INVERSE = 2
 
 def generate_graph(human_agents, destination_agents):
     """
         A method for generating a graph for an environment
         given a list of human and destination agents
     """
-    n, m = len(human_agents), len(destination_agents)
+    n = m = DENSITY_INVERSE * int(sqrt(len(human_agents) + len(destination_agents)))
     nodes = []  # List of nodes
     final_nodes = []  # List of nodes to be added to the graph
 

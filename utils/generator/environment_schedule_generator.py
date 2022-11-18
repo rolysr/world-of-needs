@@ -12,7 +12,7 @@ def generate_environment_schedule(human_agents, human_agents_locations, destinat
         (<time>, <human_agent>, 'negotiation', <destination_agent>): Execution of negotiation process
     """
     schedule = PriorityQueue() # The output priority queue
-    for human_agent in human_agents():
+    for human_agent in human_agents:
         destination, arrival_time = human_agent.next_destination_to_move(human_agents_locations[human_agent], destination_agents_locations, graph)
         schedule.put((arrival_time, human_agent, 'arrival', destination))
     return schedule
