@@ -12,9 +12,9 @@ def generate_human_needs(number_of_needs):
     
     # select random needs
     for i in range(number_of_goal_needs):
-        rand_index = randrange(0, len(goal_need_indexes))
-        goal_needs.append((rand_index, rand_index, 5)) # a goal need is a tuple (priority, need_id, needed_amount)
-        goal_need_indexes.remove(rand_index)
+        rand_need_id = goal_need_indexes[randrange(0, len(goal_need_indexes))]
+        goal_needs.append((rand_need_id, rand_need_id, 5)) # a goal need is a tuple (priority, need_id, needed_amount)
+        goal_need_indexes.remove(rand_need_id)
 
     goal_needs.sort()
     return goal_needs

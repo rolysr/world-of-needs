@@ -1,6 +1,7 @@
 from math import inf
 from queue import PriorityQueue
-from graph import Node, Graph
+from utils.graph.graph import Graph
+from utils.graph.node import Node
 
 def dijkstra(initial_node : Node, graph : Graph):
     """
@@ -25,14 +26,14 @@ def dijkstra(initial_node : Node, graph : Graph):
         distance, node = queue.get() # get node with minimum distance
         visited_node[node] = True # set visited node as true
         
-        for adyacent in node.adyacents: # analize each adyacent node and try to update
-            adyacent_node, distance = adyacent[0], adyacent[1] # get adyacent node and its distance from initial
+        for adjacent in node.adjacents: # analize each adjacent node and try to update
+            adjacent_node, distance = adjacent[0], adjacent[1] # get adjacent node and its distance from initial
             
-            if visited_node[adyacent[0]]: # don't analize visited nodes
+            if visited_node[adjacent[0]]: # don't analize visited nodes
                 continue
             
-            new_distance = distance + distance_to_node[node] # new distance for adyacent node
-            if new_distance < distance_to_node[adyacent_node]: # if distance is improved, then update it
-                distance_to_node[adyacent_node] = new_distance
+            new_distance = distance + distance_to_node[node] # new distance for adjacent node
+            if new_distance < distance_to_node[adjacent_node]: # if distance is improved, then update it
+                distance_to_node[adjacent_node] = new_distance
 
     return distance_to_node

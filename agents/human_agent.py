@@ -12,6 +12,7 @@ class HumanAgent(Agent):
     """
 
     def __init__(self, number_of_needs): # Class constructor
+        super().__init__() 
         self.needs = generate_human_needs(number_of_needs) # This has to be generater using random variables (need_priority, need_id, amount_to_satisfy)
         self.balance = generate_human_balance() # This has to be generated using random variables
         self.speed = generate_human_speed() # speed on m/s, this mus be generated with a random variable
@@ -67,3 +68,6 @@ class HumanAgent(Agent):
         travel_time = minimum_distance / self.speed # calculate time for the travel
 
         return best_destination_agent, travel_time # return best destination to go and the travel time it consumes
+
+    def __str__(self) -> str:
+        return "Human Agent:\n id: {}\n needs: {}\n balance: {}\n speed: {}\n visited_destination: {}\n".format(self.id, self.needs, self.balance, self.speed, self.visited_destination)
