@@ -38,10 +38,10 @@ def generate_graph(human_agents, destination_agents):
                     edge_weight = generate_street_length()
                     node.adjacents.append((adjacent, edge_weight))
 
-                    if dir in [(0, 1), (1, 0), (1, 1)]: # generate bidirectional edge if node has not been analized
+                    if dir in [(0, 1), (1, 0), (1, 1), (1, -1)]: # generate bidirectional edge if node has not been analized
                         adjacent.adjacents.append((node, edge_weight))
             
-            final_nodes.append(node[i][j]) # add node to the final list
+            final_nodes.append(nodes[i][j]) # add node to the final list
 
     # create graph
     graph = Graph(final_nodes)
