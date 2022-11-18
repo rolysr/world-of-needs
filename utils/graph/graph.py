@@ -26,6 +26,5 @@ class Graph:
 
         random.shuffle(self.nodes) # shuffle the nodes order to add elements
 
-        elems_index = 0
-        for node in self.nodes: # add elements
-            node.values.append(elems[elems_index])
+        for index in range(len(elems)): # add elements
+            self.nodes[index].values.append(elems[index])

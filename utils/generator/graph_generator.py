@@ -23,7 +23,7 @@ def generate_graph(human_agents, destination_agents):
     for i in range(n):
         row = []
         for j in range(m):
-            row.append(Node([], []))
+            row.append(Node([], [], i*m+j))
         nodes.append(row)
 
     # This create the edges for the nodes
@@ -40,9 +40,6 @@ def generate_graph(human_agents, destination_agents):
                     adjacent = nodes[adjacent_row][adjacent_column]
                     edge_weight = generate_street_length()
                     node.adjacents.append((adjacent, edge_weight))
-
-                    # if dir in [(0, 1), (1, 0), (1, 1), (1, -1)]: # generate bidirectional edge if node has not been analized
-                    #     adjacent.adjacents.append((node, edge_weight))
 
             final_nodes.append(nodes[i][j])  # add node to the final list
 
