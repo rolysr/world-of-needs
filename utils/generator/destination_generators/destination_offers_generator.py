@@ -13,7 +13,7 @@ def generate_destination_offers(number_of_needs):
     
     # select random needs to make offers
     for i in range(number_of_offers):
-        rand_index = randrange(0, len(offer_indexes))
+        rand_index = offer_indexes[randrange(0, len(offer_indexes))]
         offers.append((rand_index, 1000, 10)) # an offer is a tuple (need_id, amount, price)
         offer_indexes.remove(rand_index)
 
