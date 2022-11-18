@@ -26,3 +26,6 @@ class DestinationAgent(Agent):
                     offer[1] -= request[1] # update amount of remaining offers
 
         self.offers = [offer for offer in self.offers if offer[1] > 0] # update offers by keeping track of offers with amount greater than zero
+
+    def __str__(self) -> str:
+        return "Destination Agent - id: {}, offers: {}, attention_time: {}, total_time_working: {}, next_available_time: {}".format(self.id, self.offers, self.attention_time, self.total_time_working, self.next_available_time)
