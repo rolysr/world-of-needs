@@ -16,4 +16,5 @@ class Node:
     def __str__(self) -> str:
         response = "Node:\n id: {}\n values: {}\n adjacents:\n".format(self.id, self.values)
         for adjacent in self.adjacents:
-            response += " Node: id: {}".format(adjacent.id)
+            response += " Node: id: {}".format(adjacent[0].id)
+        return response
