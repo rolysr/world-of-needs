@@ -29,17 +29,17 @@ def generate_graph(human_agents, destination_agents):
         for j in range(m):
             node = nodes[i][j]
 
-            for dir in dirs: # set adyacents for each node
-                adyacent_row = i + dir[0]
-                adyacent_column = j + dir[1]
+            for dir in dirs: # set adjacents for each node
+                adjacent_row = i + dir[0]
+                adjacent_column = j + dir[1]
                 
-                if valid_position_in_matrix(n, m, adyacent_row, adyacent_column): # verify valid position in matrix
-                    adyacent = nodes[adyacent_row][adyacent_column]
+                if valid_position_in_matrix(n, m, adjacent_row, adjacent_column): # verify valid position in matrix
+                    adjacent = nodes[adjacent_row][adjacent_column]
                     edge_weight = generate_street_length()
-                    node.adyacents.append((adyacent, edge_weight))
+                    node.adjacents.append((adjacent, edge_weight))
 
                     if dir in [(0, 1), (1, 0), (1, 1)]: # generate bidirectional edge if node has not been analized
-                        adyacent.adyacents.append((node, edge_weight))
+                        adjacent.adjacents.append((node, edge_weight))
             
             final_nodes.append(node[i][j]) # add node to the final list
 
