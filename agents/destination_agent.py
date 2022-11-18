@@ -9,6 +9,7 @@ class DestinationAgent(Agent):
     """
 
     def __init__(self, number_of_needs): # class constructor
+        super().__init__() # init parent Agent class
         self.offers = generate_destination_offers(number_of_needs) # The needs this can satisfy by offers. (need_id, need_available_amout, price)
         self.attention_time = generate_destination_attention_time() # Attention time for a given client is Poisson-distributed
         self.total_time_working = generate_destination_working_time() # Total time the agent works
@@ -28,4 +29,4 @@ class DestinationAgent(Agent):
         self.offers = [offer for offer in self.offers if offer[1] > 0] # update offers by keeping track of offers with amount greater than zero
 
     def __str__(self) -> str:
-        return "Destination Agent - id: {}, offers: {}, attention_time: {}, total_time_working: {}, next_available_time: {}".format(self.id, self.offers, self.attention_time, self.total_time_working, self.next_available_time)
+        return "Destination Agent:\n id: {}\n offers: {}\n attention_time: {}\n total_time_working: {}\n next_available_time: {}\n".format(self.id, self.offers, self.attention_time, self.total_time_working, self.next_available_time)

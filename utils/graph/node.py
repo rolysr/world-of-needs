@@ -12,3 +12,8 @@ class Node:
 
     def __eq__(self, other) -> bool:
         return self.id == other.id
+
+    def __str__(self) -> str:
+        response = "Node:\n id: {}\n values: {}\n adjacents:\n".format(self.id, self.values)
+        for adjacent in self.adjacents:
+            response += " Node: id: {}".format(adjacent.id)
