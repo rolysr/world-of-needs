@@ -2,7 +2,7 @@ from utils.generator.destination_generators.destination_generator import generat
 from utils.generator.environment_schedule_generator import generate_environment_schedule
 from utils.generator.graph_generator import *
 from utils.generator.human_generators.human_generator import generate_human_agents
-
+from agents.destination_agent import *
 
 class Environment:
     """
@@ -22,6 +22,8 @@ class Environment:
         # Here we generate a graph and locate generated humans and destinations on it
         self.graph = generate_graph(self.human_agents, self.destination_agents)
 
+        print(self.graph)
+
         # A correlation between agents and nodes on the internal graph
         self.human_agents_locations = self.get_agents_locations(
             self.human_agents, self.graph)
@@ -30,7 +32,8 @@ class Environment:
 
         # The main data structure for updating the environment. This field is a priority queue with the actions that have to be executed on the environment
         # Each element has form (time_to_be_executed, human_agent_to_execute_action, other_data)
-        self.schedule = generate_environment_schedule(self.human_agents, self.human_agents_locations, self.destination_agents_locations, self.graph)
+        self.schedule = generate_environment_schedule(
+            self.human_agents, self.human_agents_locations, self.destination_agents_locations, self.graph)
 
         # Internal time elapsed in minutes
         self.total_time_elapsed = 0
@@ -39,7 +42,7 @@ class Environment:
         self.simulation_duration = simulation_duration
 
     def run(self, time_step=10):
-        while self.schedule.qsize()>0 and self.total_time_elapsed<self.simulation_duration:
+        while self.schedule.qsize() > 0 and self.total_time_elapsed < self.simulation_duration:
             self.execute(time_step)
 
     def execute(self, time_step=10):
@@ -57,7 +60,8 @@ class Environment:
         while self.schedule.qsize() > 0 and self.schedule.queue[0][0] < self.total_time_elapsed:
             time, human_agent, action, destination_agent = self.schedule.get()
 
-            print("Se realizo la accion {0} por el agente humano {1} sobre el agente de destino {2} en el tiempo {3}\n\n".format(action, human_agent, destination_agent, time))
+            print("Se realizo la accion {0} por el agente humano {1} sobre el agente de destino {2} en el tiempo {3}\n\n".format(
+                action, human_agent, destination_agent, time))
 
             if action == 'arrival':  # arrival action
                 self.arrival(time, human_agent, destination_agent)
@@ -84,7 +88,7 @@ class Environment:
 
         return agent_location
 
-    def negotiation(self, time, human_agent, destination_agent):
+    def negotiation(self, time, human_agent, destination_agent : DestinationAgent):
         """
             Simulates the process of negotiation between human agent and destination agent.
             The human agent receives the destinations offers and decides to buy or not
@@ -100,6 +104,16 @@ class Environment:
 
         # the human agent request is processed by the destination agent
         destination_agent.process_offers_requests(request)
+
+        destination_agent.number_current_clients -= 1
+        if destination_agent.number_current_clients > 0:
+            negotiation_time = destination_agent.attention_time()  # negotiation time
+            destination_agent.next_available_time = time + negotiation_time
+            actual_human_agent=destination_agent.queue.get()
+
+            # update available time for next agent
+            self.schedule.put((destination_agent.next_available_time, actual_human_agent,
+                               'negotiation', destination_agent))
 
         # once the human finishes negotiation process, tries to move to another place in case there is needs left
         destination, arrival_time = human_agent.next_destination_to_move(
@@ -119,12 +133,17 @@ class Environment:
             destination_agent)  # the agent won't get back to this destination
 
         if destination_agent.total_time_working >= time:  # if agent got there at working time
-            negotiation_time = destination_agent.next_available_time  # negotiation time
             destination_agent.number_current_clients += 1
-            # update available time for next agent
-            destination_agent.next_available_time += destination_agent.attention_time
-            self.schedule.put((negotiation_time, human_agent,
-                              'negotiation', destination_agent))
+            destination_agent.queue.put(human_agent)
+
+            if destination_agent.number_current_clients == 1:
+                negotiation_time = destination_agent.attention_time()  # negotiation time
+                destination_agent.next_available_time = time + negotiation_time
+                actual_human_agent=destination_agent.queue.get()
+
+                # update available time for next agent
+                self.schedule.put((destination_agent.next_available_time, actual_human_agent,
+                                   'negotiation', destination_agent))
 
         else:  # in case the human agent does not want to stay in queue redifines his plan
             destination, arrival_time = human_agent.next_destination_to_move(

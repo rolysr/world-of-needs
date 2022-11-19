@@ -12,8 +12,8 @@ if __name__ == "__main__":
     # human_agents = generate_human_agents(10, 6)
     # destination_agents = generate_destination_agents(4, 6)
     # graph_generator_test(human_agents, destination_agents)
-    number_human_agents = 10
-    number_destination_agents = 4
+    number_human_agents = 3
+    number_destination_agents = 2
     number_needs = 6
     simulation_duration = 100000
     env = Environment(number_human_agents, number_destination_agents,
