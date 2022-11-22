@@ -24,9 +24,6 @@ def dijkstra(initial_node: Node, graph: Graph, heuristic: dict() = None):
 
     # a dictionary that denotes if a nodes has been visited or not
     visited_node = {node: False for node in graph.nodes}
-    
-    # parent node dictionary for getting the nodes in a minimum path
-    parent_node = { node: None for node in graph.nodes }
 
     queue = PriorityQueue()  # a data structure for determining the net node to be analized
 
@@ -59,4 +56,4 @@ def dijkstra(initial_node: Node, graph: Graph, heuristic: dict() = None):
                 queue.put((distance_to_node[adjacent_node], adjacent_node))
                 size += 1
                 
-    return distance_to_node, parent_node
+    return distance_to_node

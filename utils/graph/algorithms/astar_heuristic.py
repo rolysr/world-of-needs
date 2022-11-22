@@ -13,7 +13,7 @@ def astar_heuristic(destination_nodes, graph, human_agent, destination_agents, n
         dist = dijkstra(dest_node, graph) # get minimum distance from destination to all other nodes
         
         for node in heuristic.keys(): # update best value for node heuristic
-            heuristic[node] = min(heuristic[node], dist[node] * (destination_agents_qualities[dest] * 0.5)) 
+            heuristic[node] = min(heuristic[node], dist[node] * destination_agents_qualities[dest] * 0.5) 
 
     # return heuristic
     return heuristic
@@ -56,13 +56,13 @@ def get_destination_agents_quality(human_agent, destination_agents, number_of_ne
     quality = dict()
 
     # get needs binary vector
-    needs_binary_vector = [0] * len(number_of_needs)
+    needs_binary_vector = [0] * number_of_needs
     for need in human_agent.needs: # set to 1 the needs that are part of human agent's needs
         needs_binary_vector[need[1]] = 1
 
     for d in destination_agents:
         # get offers binary vector
-        offers_binary_vector = [0] * len(number_of_needs)
+        offers_binary_vector = [0] * number_of_needs
         for offer in d.offers:
             offers_binary_vector[offer[0]] = 1
 

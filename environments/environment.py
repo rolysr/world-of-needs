@@ -36,7 +36,7 @@ class Environment:
         # The main data structure for updating the environment. This field is a priority queue with the actions that have to be executed on the environment
         # Each element has form (time_to_be_executed, human_agent_to_execute_action, other_data)
         self.schedule = generate_environment_schedule(
-            self.human_agents, self.human_agents_locations, self.destination_agents_locations, self.graph)
+            self.human_agents, self.human_agents_locations, self.destination_agents_locations, self.graph, self.number_of_needs)
 
         # Internal time elapsed in minutes
         self.total_time_elapsed = 0
@@ -132,7 +132,7 @@ class Environment:
             otherwise, he decides to go to other destination.
             The arrival time is also provided in case it is needed to calculate next arrival time.
         """
-        human_agent.visited_destination.append(
+        human_agent.visited_destinations.append(
             destination_agent)  # the agent won't get back to this destination
 
         if destination_agent.total_time_working >= time:  # if agent got there at working time

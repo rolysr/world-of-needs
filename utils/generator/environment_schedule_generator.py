@@ -1,7 +1,7 @@
 from queue import PriorityQueue
 
 
-def generate_environment_schedule(human_agents, human_agents_locations, destination_agents_locations, graph):
+def generate_environment_schedule(human_agents, human_agents_locations, destination_agents_locations, graph, number_of_needs):
     """
         Method for generate an environment schedule given a list of previously
         generated human agents. This method returns a priority queue with actions to execute
@@ -13,6 +13,6 @@ def generate_environment_schedule(human_agents, human_agents_locations, destinat
     """
     schedule = PriorityQueue() # The output priority queue
     for human_agent in human_agents:
-        destination, arrival_time = human_agent.next_destination_to_move(human_agents_locations[human_agent], destination_agents_locations, graph)
+        destination, arrival_time = human_agent.next_destination_to_move(human_agents_locations[human_agent], destination_agents_locations, graph, number_of_needs)
         schedule.put((arrival_time, human_agent, 'arrival', destination))
     return schedule

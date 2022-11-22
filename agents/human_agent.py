@@ -68,7 +68,7 @@ class HumanAgent(Agent):
         destination_agents_locations = { destination_agent: destination_agents_locations[destination_agent] for destination_agent in destination_agents_locations.keys() if destination_agent not in self.visited_destinations } # set possible destination to go if not visited
         heuristic_function = astar_heuristic(destination_agents_locations, graph, self, destination_agents_locations.keys(), number_of_needs)
 
-        minimum_distance, best_destination_agent = astar(human_location, graph, heuristic_function)
+        minimum_distance, best_destination_agent = astar(human_location, destination_agents_locations, graph, heuristic_function)
 
         travel_time = minimum_distance / self.speed  # calculate time for the travel
 
@@ -76,4 +76,4 @@ class HumanAgent(Agent):
         return best_destination_agent, travel_time
 
     def __str__(self) -> str:
-        return "Human Agent:\n id: {}\n needs: {}\n balance: {}\n speed: {}\n visited_destinations: {}\n".format(self.id, self.needs, self.balance, self.speed, self.visited_destination)
+        return "Human Agent:\n id: {}\n needs: {}\n balance: {}\n speed: {}\n visited_destinations: {}\n".format(self.id, self.needs, self.balance, self.speed, self.visited_destinations)
