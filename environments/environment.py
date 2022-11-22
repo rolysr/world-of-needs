@@ -18,6 +18,9 @@ class Environment:
         self.destination_agents = generate_destination_agents(
             number_destination_agents, number_of_needs)
 
+        # set number of needs
+        self.number_of_needs = number_of_needs
+
         # The graph to represent the environment internally
         # Here we generate a graph and locate generated humans and destinations on it
         self.graph = generate_graph(self.human_agents, self.destination_agents)
@@ -117,7 +120,7 @@ class Environment:
 
         # once the human finishes negotiation process, tries to move to another place in case there is needs left
         destination, arrival_time = human_agent.next_destination_to_move(
-            self.human_agents_locations[human_agent], self.destination_agents_locations, self.graph)
+            self.human_agents_locations[human_agent], self.destination_agents_locations, self.graph, self.number_of_needs)
         self.schedule.put(
             (arrival_time + time, human_agent, 'arrival', destination))
 
@@ -147,6 +150,6 @@ class Environment:
 
         else:  # in case the human agent does not want to stay in queue redifines his plan
             destination, arrival_time = human_agent.next_destination_to_move(
-                self.human_agents_locations[human_agent], self.destination_agents_locations, self.graph)
+                self.human_agents_locations[human_agent], self.destination_agents_locations, self.graph, self.number_of_needs)
             self.schedule.put(
                 (arrival_time + time, human_agent, 'arrival', destination))

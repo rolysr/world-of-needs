@@ -4,7 +4,9 @@ from agents.agent import Agent
 from utils.generator.human_generators.human_balance_generator import generate_human_balance
 from utils.generator.human_generators.human_needs_generator import generate_human_needs
 from utils.generator.human_generators.human_speed_generator import generate_human_speed
-from utils.graph.dijkstra import dijkstra
+from utils.graph.algorithms.astar import astar
+from utils.graph.algorithms.astar_heuristic import astar_heuristic
+from utils.graph.algorithms.dijkstra import dijkstra
 
 
 class HumanAgent(Agent):
@@ -20,7 +22,7 @@ class HumanAgent(Agent):
         self.balance = generate_human_balance()
         # speed on m/s, this mus be generated with a random variable
         self.speed = generate_human_speed()
-        self.visited_destination = []  # destinations visited by the human agent
+        self.visited_destinations = []  # destinations visited by the human agent
 
     def offers_requests(self, offers):
         """
@@ -55,26 +57,18 @@ class HumanAgent(Agent):
 
         return offers_requests
 
-    def next_destination_to_move(self, human_location, destination_agents_locations, graph):
+    def next_destination_to_move(self, human_location, destination_agents_locations, graph, number_of_needs):
         """
             This method receives a location that is the current (initial) agent
             position, a group of destination agents and a graph.  The output is the next destination
             for the agent to moving according to his needs, and the time of arrival having on an account
             the destination distance and human agent speed 
         """
-        distance_from_initial = dijkstra(
-            human_location, graph)  # get distance to all nodes
-        minimum_distance = inf  # best distance to destination location
         best_destination_agent = None  # best destination agent
+        destination_agents_locations = { destination_agent: destination_agents_locations[destination_agent] for destination_agent in destination_agents_locations.keys() if destination_agent not in self.visited_destinations } # set possible destination to go if not visited
+        heuristic_function = astar_heuristic(destination_agents_locations, graph, self, destination_agents_locations.keys(), number_of_needs)
 
-        for destination in destination_agents_locations.keys():  # try  to select the best next destination to go
-            destination_agent_location = destination_agents_locations[destination]
-            destination_agent_distance = distance_from_initial[destination_agent_location]
-
-            # is destination is the one with the least distance and is not visited, then got there
-            if minimum_distance > destination_agent_distance and (destination not in self.visited_destination):
-                minimum_distance = destination_agent_distance
-                best_destination_agent = destination
+        minimum_distance, best_destination_agent = astar(human_location, graph, heuristic_function)
 
         travel_time = minimum_distance / self.speed  # calculate time for the travel
 
@@ -82,4 +76,4 @@ class HumanAgent(Agent):
         return best_destination_agent, travel_time
 
     def __str__(self) -> str:
-        return "Human Agent:\n id: {}\n needs: {}\n balance: {}\n speed: {}\n visited_destination: {}\n".format(self.id, self.needs, self.balance, self.speed, self.visited_destination)
+        return "Human Agent:\n id: {}\n needs: {}\n balance: {}\n speed: {}\n visited_destinations: {}\n".format(self.id, self.needs, self.balance, self.speed, self.visited_destination)
