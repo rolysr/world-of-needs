@@ -16,6 +16,7 @@ GLOBAL_HUMAN_AVERAGE_INCOME = 2920/12
 TIME_DISSATISFACTION_WEIGHTING_FACTOR = 100
 MONEY_DISSATISFACTION_WEIGHTING_FACTOR = 100
 
+
 class HumanAgent(Agent):
     """
         Class that represents a human agent
@@ -117,9 +118,10 @@ class HumanAgent(Agent):
         # needs dissatisfaction formula
         needs_dissatisfaction = 0
         for tuple in self.needs:
-            needs_dissatisfaction+=normalized_income_rate*tuple[0]*tuple[2]
+            needs_dissatisfaction += normalized_income_rate*tuple[0]*tuple[2]
         # time dissatisfaction formula
-        time_dissatisfaction = time*normalized_income_rate*TIME_DISSATISFACTION_WEIGHTING_FACTOR
+        time_dissatisfaction = time*normalized_income_rate * TIME_DISSATISFACTION_WEIGHTING_FACTOR
         # money dissatisfaction formula
-        money_dissatisfaction = (self.base_balance-self.balance)*(1.0/normalized_income_rate)*MONEY_DISSATISFACTION_WEIGHTING_FACTOR
+        money_dissatisfaction = (self.base_balance-self.balance)*(
+            1 + 1.0/normalized_income_rate)*MONEY_DISSATISFACTION_WEIGHTING_FACTOR
         return needs_dissatisfaction+time_dissatisfaction+money_dissatisfaction
