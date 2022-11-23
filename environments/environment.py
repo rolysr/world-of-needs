@@ -9,12 +9,12 @@ class Environment:
         Abstract class representing an Environment
     """
 
-    def __init__(self, number_human_agents, number_destination_agents, number_of_needs, simulation_duration):  # Class constructor
+    def __init__(self, number_human_agents, number_destination_agents, number_of_needs, simulation_duration, gini_coef, mean_income):  # Class constructor
         # check inputs are valid (to_do)
 
         # Generate random agents
         self.human_agents = generate_human_agents(
-            number_human_agents, number_of_needs)
+            number_human_agents, number_of_needs, gini_coef, mean_income)
         self.destination_agents = generate_destination_agents(
             number_destination_agents, number_of_needs)
 

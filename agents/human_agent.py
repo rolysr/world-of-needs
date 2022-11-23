@@ -4,17 +4,17 @@ from agents.agent import Agent
 from utils.generator.human_generators.human_balance_generator import generate_human_balance
 from utils.generator.human_generators.human_needs_generator import generate_human_needs
 from utils.generator.human_generators.human_speed_generator import generate_human_speed
+from utils.generator.human_generators.human_income_generator import generate_human_income
 from utils.graph.algorithms.astar import astar
 from utils.graph.algorithms.astar_heuristic import astar_heuristic
 from utils.graph.algorithms.dijkstra import dijkstra
-
 
 class HumanAgent(Agent):
     """
         Class that represents a human agent
     """
 
-    def __init__(self, number_of_needs):  # Class constructor
+    def __init__(self, number_of_needs, gini_coef, mean_income):  # Class constructor
         super().__init__()
         # This has to be generater using random variables (need_priority, need_id, amount_to_satisfy)
         self.needs = generate_human_needs(number_of_needs)
@@ -23,6 +23,7 @@ class HumanAgent(Agent):
         # speed on m/s, this mus be generated with a random variable
         self.speed = generate_human_speed()
         self.visited_destinations = []  # destinations visited by the human agent
+        self.income = generate_human_income(gini_coef, mean_income)
 
     def offers_requests(self, offers):
         """
@@ -77,3 +78,7 @@ class HumanAgent(Agent):
 
     def __str__(self) -> str:
         return "Human Agent:\n id: {}\n needs: {}\n balance: {}\n speed: {}\n visited_destinations: {}\n".format(self.id, self.needs, self.balance, self.speed, self.visited_destinations)
+
+    def goal_function(self, time):
+        #Let's use time, actual needs and balance to find a satisfaction function
+        pass
