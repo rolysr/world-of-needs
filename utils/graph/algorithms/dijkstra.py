@@ -4,7 +4,7 @@ from utils.graph.graph import Graph
 from utils.graph.node import Node
 
 
-def dijkstra(initial_node: Node, graph: Graph, heuristic: dict() = None):
+def dijkstra(initial_node: Node, graph: Graph):
     """
         Basic Dijkstra algorithm for calculating minimum paths
         from a node to all other nodes on a graph.
@@ -14,10 +14,6 @@ def dijkstra(initial_node: Node, graph: Graph, heuristic: dict() = None):
         <destination_node, minimum_distance_initial_node_to_destiation_node>)
     """
     # algorithm initialization
-
-    # heuristic initialization
-    if heuristic is None:
-        heuristic = { node: 0 for node in graph.nodes }
 
     # a dictionary that stores distance from initial_node to all other nodes in the graph
     distance_to_node = {}
@@ -49,7 +45,7 @@ def dijkstra(initial_node: Node, graph: Graph, heuristic: dict() = None):
                 continue
 
             # new distance for adjacent node
-            new_distance = distance + distance_to_node[node] + heuristic[node]
+            new_distance = distance + distance_to_node[node]
             # if distance is improved, then update it and also, update parent node
             if new_distance < distance_to_node[adjacent_node]:
                 distance_to_node[adjacent_node] = new_distance

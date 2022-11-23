@@ -66,11 +66,21 @@ class HumanAgent(Agent):
         """
         best_destination_agent = None  # best destination agent
         destination_agents_locations = { destination_agent: destination_agents_locations[destination_agent] for destination_agent in destination_agents_locations.keys() if destination_agent not in self.visited_destinations } # set possible destination to go if not visited
-        heuristic_function = astar_heuristic(destination_agents_locations, graph, self, destination_agents_locations.keys(), number_of_needs)
+        destinations_real_distances = dijkstra(human_location, graph) # get real distance for all destination agents
+        minimum_real_distance, minimum_heuristic_distance = inf, inf # minimum distances
 
-        minimum_distance, best_destination_agent = astar(human_location, destination_agents_locations, graph, heuristic_function)
+        for destination_agent in destination_agents_locations.keys(): # for each desination
+            location = destination_agents_locations[destination_agent] # destination agent location
+            real_dist = destinations_real_distances[location]
+            heuristic_function = astar_heuristic(location, graph, self, destination_agent, number_of_needs) # get astar heuristic function
+            heuristic_distance = astar(human_location, location, graph, heuristic_function)
 
-        travel_time = minimum_distance / self.speed  # calculate time for the travel
+            if heuristic_distance < minimum_heuristic_distance: # update the node with the best heuristic distance
+                best_destination_agent = destination_agent
+                minimum_heuristic_distance = heuristic_distance
+                minimum_real_distance = real_dist
+
+        travel_time = minimum_real_distance / self.speed  # calculate time for the travel
 
         # return best destination to go and the travel time it consumes
         return best_destination_agent, travel_time
