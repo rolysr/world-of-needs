@@ -26,12 +26,12 @@ class HumanAgent(Agent):
         # This has to be generater using random variables (need_priority, need_id, amount_to_satisfy)
         self.needs = generate_human_needs(number_of_needs)
         # This has to be generated using random variables
-        self.balance = generate_human_balance()
         self.base_balance = self.balance
         # speed on m/s, this mus be generated with a random variable
         self.speed = generate_human_speed()
         self.visited_destinations = []  # destinations visited by the human agent
         self.income = generate_human_income(gini_coef, mean_income)
+        self.balance = generate_human_balance(self.income)
 
     def offers_requests(self, offers):
         """
