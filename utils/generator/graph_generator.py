@@ -19,7 +19,7 @@ def generate_graph(human_agents, destination_agents):
     dirs = []
     for i in range(-1, 2):
         for j in range(-1, 2):
-            if i != 0 or j != 0:
+            if (i != 0 or j != 0) and (i == 0 or j == 0):
                 dirs.append((i, j))
 
     # This creates the nodes from a corresponding n x m matrix

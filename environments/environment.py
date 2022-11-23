@@ -119,10 +119,11 @@ class Environment:
                                'negotiation', destination_agent))
 
         # once the human finishes negotiation process, tries to move to another place in case there is needs left
-        destination, arrival_time = human_agent.next_destination_to_move(
-            self.human_agents_locations[human_agent], self.destination_agents_locations, self.graph, self.number_of_needs)
-        self.schedule.put(
-            (arrival_time + time, human_agent, 'arrival', destination))
+        if len(human_agent.needs) > 0:
+            destination, arrival_time = human_agent.next_destination_to_move(
+                self.human_agents_locations[human_agent], self.destination_agents_locations, self.graph, self.number_of_needs)
+            self.schedule.put(
+                (arrival_time + time, human_agent, 'arrival', destination))
 
     def arrival(self, time, human_agent, destination_agent):
         """
