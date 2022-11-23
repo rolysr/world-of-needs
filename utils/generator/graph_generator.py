@@ -15,12 +15,8 @@ def generate_graph(human_agents, destination_agents):
     nodes = []  # List of nodes
     final_nodes = []  # List of nodes to be added to the graph
 
-    # generate directions array. 6 possible directions
-    dirs = []
-    for i in range(-1, 2):
-        for j in range(-1, 2):
-            if (i != 0 or j != 0) and (i == 0 or j == 0):
-                dirs.append((i, j))
+    # generate directions array. The are four possible directions but just two will be updated
+    dirs = [(0, 1), (1, 0)]
 
     # This creates the nodes from a corresponding n x m matrix
     for i in range(n):
@@ -43,6 +39,7 @@ def generate_graph(human_agents, destination_agents):
                     adjacent = nodes[adjacent_row][adjacent_column]
                     edge_weight = generate_street_length()
                     node.adjacents.append((adjacent, edge_weight))
+                    adjacent.adjacents.append((node, edge_weight)) # update the adjacents in other to have uniform bidirectional paths
 
             final_nodes.append(nodes[i][j])  # add node to the final list
 

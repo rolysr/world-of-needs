@@ -13,11 +13,12 @@ if __name__ == "__main__":
     # human_agents = generate_human_agents(10, 6)
     # destination_agents = generate_destination_agents(4, 6)
     # graph_generator_test(human_agents, destination_agents)
-    # number_human_agents = 3
-    # number_destination_agents = 2
-    # number_needs = 6
-    # simulation_duration = 100000
-    # env = Environment(number_human_agents, number_destination_agents,
-    #                   number_needs, simulation_duration)
-    # env.run(5)
-    run_income_generator_test()
+    number_human_agents = 3
+    number_destination_agents = 2
+    number_needs = 6
+    simulation_duration = 100000
+    gini_coef, mean_income = 0.5, 1000
+    env = Environment(number_human_agents, number_destination_agents,
+                      number_needs, simulation_duration, gini_coef, mean_income)
+    env.run(5)
+    # run_income_generator_test()
