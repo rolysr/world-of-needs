@@ -9,6 +9,13 @@ from utils.graph.algorithms.astar import astar
 from utils.graph.algorithms.astar_heuristic import astar_heuristic
 from utils.graph.algorithms.dijkstra import dijkstra
 
+# up to add to settings file (value taken from https://news.gallup.com/poll/166211/worldwide-median-household-income-000.aspx)
+# 2920 is the annual value
+GLOBAL_HUMAN_AVERAGE_INCOME = 2920/12
+# up to tune for better results, such be done in the testing of the whole simulation to check how it works
+TIME_DISSATISFACTION_WEIGHTING_FACTOR = 100
+MONEY_DISSATISFACTION_WEIGHTING_FACTOR = 100
+
 class HumanAgent(Agent):
     """
         Class that represents a human agent
@@ -20,6 +27,7 @@ class HumanAgent(Agent):
         self.needs = generate_human_needs(number_of_needs)
         # This has to be generated using random variables
         self.balance = generate_human_balance()
+        self.base_balance = self.balance
         # speed on m/s, this mus be generated with a random variable
         self.speed = generate_human_speed()
         self.visited_destinations = []  # destinations visited by the human agent
@@ -44,7 +52,8 @@ class HumanAgent(Agent):
                 if need[1] == offer[0]:
                     need_amount, offer_amount, price = need[2], offer[1], offer[2]
                     # product amount to be adquired
-                    amount_to_buy = min(need_amount, offer_amount, self.balance//price)
+                    amount_to_buy = min(
+                        need_amount, offer_amount, self.balance//price)
 
                     if amount_to_buy > 0:  # if human is going to get some need then update his internal state
                         self.needs[j] = (need[0], need[1],
@@ -66,17 +75,22 @@ class HumanAgent(Agent):
             the destination distance and human agent speed 
         """
         best_destination_agent = None  # best destination agent
-        destination_agents_locations = { destination_agent: destination_agents_locations[destination_agent] for destination_agent in destination_agents_locations.keys() if destination_agent not in self.visited_destinations } # set possible destination to go if not visited
-        destinations_real_distances = dijkstra(human_location, graph) # get real distance for all destination agents
-        minimum_real_distance, minimum_heuristic_distance = inf, inf # minimum distances
+        destination_agents_locations = {destination_agent: destination_agents_locations[destination_agent] for destination_agent in destination_agents_locations.keys(
+        ) if destination_agent not in self.visited_destinations}  # set possible destination to go if not visited
+        # get real distance for all destination agents
+        destinations_real_distances = dijkstra(human_location, graph)
+        minimum_real_distance, minimum_heuristic_distance = inf, inf  # minimum distances
 
-        for destination_agent in destination_agents_locations.keys(): # for each desination
-            location = destination_agents_locations[destination_agent] # destination agent location
+        for destination_agent in destination_agents_locations.keys():  # for each desination
+            # destination agent location
+            location = destination_agents_locations[destination_agent]
             real_dist = destinations_real_distances[location]
-            heuristic_function = astar_heuristic(location, graph, self, destination_agent, number_of_needs) # get astar heuristic function
-            heuristic_distance = astar(human_location, location, graph, heuristic_function)
+            heuristic_function = astar_heuristic(
+                location, graph, self, destination_agent, number_of_needs)  # get astar heuristic function
+            heuristic_distance = astar(
+                human_location, location, graph, heuristic_function)
 
-            if heuristic_distance < minimum_heuristic_distance: # update the node with the best heuristic distance
+            if heuristic_distance < minimum_heuristic_distance:  # update the node with the best heuristic distance
                 best_destination_agent = destination_agent
                 minimum_heuristic_distance = heuristic_distance
                 minimum_real_distance = real_dist
@@ -89,6 +103,23 @@ class HumanAgent(Agent):
     def __str__(self) -> str:
         return "Human Agent:\n id: {}\n needs: {}\n balance: {}\n speed: {}\n visited_destinations: {}\n".format(self.id, self.needs, self.balance, self.speed, self.visited_destinations)
 
-    def goal_function(self, time):
-        #Let's use time, actual needs and balance to find a satisfaction function
-        pass
+    def dissatisfaction(self, time):
+        """
+            This is the goal function of a human agent.
+
+            This method receives the actual time of the simulation. Should be called just 
+            after a human agent ends its movement in the environment to get the actual 
+            dissatisfaction.
+        """
+        # Let's use time, actual needs and balance to find a satisfaction function
+        # Also uses the income rate of the human agent
+        normalized_income_rate = self.income / GLOBAL_HUMAN_AVERAGE_INCOME
+        # needs dissatisfaction formula
+        needs_dissatisfaction = 0
+        for tuple in self.needs:
+            needs_dissatisfaction+=normalized_income_rate*tuple[0]*tuple[2]
+        # time dissatisfaction formula
+        time_dissatisfaction = time*normalized_income_rate*TIME_DISSATISFACTION_WEIGHTING_FACTOR
+        # money dissatisfaction formula
+        money_dissatisfaction = (self.base_balance-self.balance)*(1.0/normalized_income_rate)*MONEY_DISSATISFACTION_WEIGHTING_FACTOR
+        return needs_dissatisfaction+time_dissatisfaction+money_dissatisfaction
