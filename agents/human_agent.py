@@ -22,10 +22,10 @@ class HumanAgent(Agent):
         Class that represents a human agent
     """
 
-    def __init__(self, number_of_needs, gini_coef, mean_income):  # Class constructor
+    def __init__(self, number_of_needs, gini_coef, mean_income, human_needs_density):  # Class constructor
         super().__init__()
         # This has to be generater using random variables (need_priority, need_id, amount_to_satisfy)
-        self.needs = generate_human_needs(number_of_needs)
+        self.needs = generate_human_needs(number_of_needs, human_needs_density)
         # speed on m/s, this mus be generated with a random variable
         self.speed = generate_human_speed()
         self.visited_destinations = []  # destinations visited by the human agent
