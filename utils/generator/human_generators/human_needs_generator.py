@@ -1,5 +1,3 @@
-from queue import PriorityQueue
-from random import randrange
 from numpy.random import *
 from math import *
 
@@ -17,7 +15,7 @@ def generate_human_needs(number_of_needs, human_needs_density):
         if X >= threshold:
             continue
         priority = uniform(0, 100)
-        amount = exponential(1) * sqrt(human_needs_density[i])
+        amount = exponential(2) * sqrt(human_needs_density[i])
         # a goal need is a tuple (priority, need_id, needed_amount)
         goal_needs.append((priority, i, amount))
 

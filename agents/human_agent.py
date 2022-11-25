@@ -24,6 +24,9 @@ class HumanAgent(Agent):
 
     def __init__(self, number_of_needs, gini_coef, mean_income, human_needs_density):  # Class constructor
         super().__init__()
+        # Parameters for the creation of this instance of human agent
+        self.params = (number_of_needs, gini_coef,
+                       mean_income, human_needs_density)
         # This has to be generater using random variables (need_priority, need_id, amount_to_satisfy)
         self.needs = generate_human_needs(number_of_needs, human_needs_density)
         # speed on m/s, this mus be generated with a random variable
@@ -120,8 +123,31 @@ class HumanAgent(Agent):
         for tuple in self.needs:
             needs_dissatisfaction += normalized_income_rate*tuple[0]*tuple[2]
         # time dissatisfaction formula
-        time_dissatisfaction = time*normalized_income_rate * TIME_DISSATISFACTION_WEIGHTING_FACTOR
+        time_dissatisfaction = time*normalized_income_rate * \
+            TIME_DISSATISFACTION_WEIGHTING_FACTOR
         # money dissatisfaction formula
         money_dissatisfaction = (self.base_balance-self.balance)*(
             1 + 1.0/normalized_income_rate)*MONEY_DISSATISFACTION_WEIGHTING_FACTOR
         return needs_dissatisfaction+time_dissatisfaction+money_dissatisfaction
+
+    def reset(self):
+        """
+            Reset function for the human agent. This function should be called just 
+            before running again the environment. 
+        """
+        new_needs = generate_human_needs(self.params[0], self.params[3])
+        for new_need in new_needs:
+            ok = False
+            for i in range(len(self.needs)):
+                actual_need = self.needs[i]
+                if new_need[1] == actual_need[1]:
+                    updated_amount = new_need[2]+actual_need[2]
+                    self.needs[i] = (actual_need[0], actual_need[1], updated_amount)
+                    ok = True
+                    break
+            if not ok:
+                self.needs.append(new_need)
+
+        self.visited_destinations = []
+        self.balance += generate_human_balance(self.income)
+        self.base_balance = self.balance
