@@ -5,8 +5,8 @@ from utils.generator.human_generators.human_balance_generator import generate_hu
 from utils.generator.human_generators.human_needs_generator import generate_human_needs
 from utils.generator.human_generators.human_speed_generator import generate_human_speed
 from utils.generator.human_generators.human_income_generator import generate_human_income
-from utils.graph.algorithms.astar import astar
-from utils.graph.algorithms.astar_heuristic import astar_heuristic
+from utils.graph.algorithms.multigoal_astar import multigoal_astar
+from utils.graph.algorithms.multigoal_astar_heuristic import multigoal_astar_heuristic
 from utils.graph.algorithms.dijkstra import dijkstra
 
 # up to add to settings file (value taken from https://news.gallup.com/poll/166211/worldwide-median-household-income-000.aspx)
@@ -78,25 +78,29 @@ class HumanAgent(Agent):
         best_destination_agent = None  # best destination agent
         destination_agents_locations = {destination_agent: destination_agents_locations[destination_agent] for destination_agent in destination_agents_locations.keys(
         ) if destination_agent not in self.visited_destinations}  # set possible destination to go if not visited
+        
         # get real distance for all destination agents
         destinations_real_distances = dijkstra(human_location, graph)
-        minimum_real_distance, minimum_heuristic_distance = inf, inf  # minimum distances
+        minimum_real_distance = inf  # minimum distances
+        
+        # get heuristic function
+        heuristic_function = multigoal_astar_heuristic(
+            destination_agents_locations, graph, self, destination_agents_locations.keys(), number_of_needs)  # get astar heuristic function
+        
+        # execute multigoal astar
+        best_destination_node = multigoal_astar(
+            human_location, destination_agents_locations.values(), graph, heuristic_function)
 
-        for destination_agent in destination_agents_locations.keys():  # for each desination
-            # destination agent location
-            location = destination_agents_locations[destination_agent]
-            real_dist = destinations_real_distances[location]
-            heuristic_function = astar_heuristic(
-                location, graph, self, destination_agent, number_of_needs)  # get astar heuristic function
-            heuristic_distance = astar(
-                human_location, location, graph, heuristic_function)
+        # update minimum real distance
+        minimum_real_distance = destinations_real_distances[best_destination_node]
 
-            if heuristic_distance < minimum_heuristic_distance:  # update the node with the best heuristic distance
-                best_destination_agent = destination_agent
-                minimum_heuristic_distance = heuristic_distance
-                minimum_real_distance = real_dist
-
-        travel_time = minimum_real_distance / self.speed  # calculate time for the travel
+        # calculate time for the travel
+        travel_time = minimum_real_distance / self.speed
+        
+        # get best destination agent assuming there is no two destination agents at the same place
+        for destination in destination_agents_locations.keys():
+            if destination_agents_locations[destination] == best_destination_node:
+                best_destination_agent = destination
 
         # return best destination to go and the travel time it consumes
         return best_destination_agent, travel_time
