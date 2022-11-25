@@ -1,15 +1,14 @@
 from math import inf
 from queue import PriorityQueue
-from utils.graph.algorithms.astar_heuristic import astar_heuristic
-from utils.graph.algorithms.dijkstra import dijkstra
 from utils.graph.graph import Graph
 from utils.graph.node import Node
 
-def astar(initial_node: Node, destination_node : Node, graph: Graph, heuristic_function: dict() = None):
+def multigoal_astar(initial_node: Node, destination_nodes : Node, graph: Graph, heuristic_function: dict() = None):
     """
         A-Star return the best destination node and its actual distance
     """
     # algorithm initialization
+    best_first_node = None # best node in distance
 
     # heuristic function is None case
     if heuristic_function is None:
@@ -34,7 +33,8 @@ def astar(initial_node: Node, destination_node : Node, graph: Graph, heuristic_f
         distance, node = queue.get()  # get node with minimum distance
         size -= 1
 
-        if node == destination_node: # if we get to the destination node, then astar stops
+        if node in destination_nodes: # if we get to the destination node, then astar stops
+            best_first_node = node
             break
 
         if visited_node[node]:
@@ -56,4 +56,5 @@ def astar(initial_node: Node, destination_node : Node, graph: Graph, heuristic_f
                 queue.put((distance_to_node[adjacent_node], adjacent_node))
                 size += 1
                 
-    return distance_to_node[destination_node]
+    # return best destination node
+    return best_first_node
