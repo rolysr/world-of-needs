@@ -9,14 +9,14 @@ class Environment:
         Abstract class representing an Environment
     """
 
-    def __init__(self, number_human_agents, number_destination_agents, number_of_needs, simulation_duration, gini_coef, mean_income):  # Class constructor
+    def __init__(self, number_human_agents, number_destination_agents, number_of_needs, simulation_duration, gini_coef, mean_income, human_needs_density, store_offers_density):  # Class constructor
         # check inputs are valid (to_do)
 
         # Generate random agents
         self.human_agents = generate_human_agents(
-            number_human_agents, number_of_needs, gini_coef, mean_income)
+            number_human_agents, number_of_needs, gini_coef, mean_income, human_needs_density)
         self.destination_agents = generate_destination_agents(
-            number_destination_agents, number_of_needs)
+            number_destination_agents, number_of_needs, store_offers_density)
 
         # set number of needs
         self.number_of_needs = number_of_needs
@@ -25,7 +25,7 @@ class Environment:
         # Here we generate a graph and locate generated humans and destinations on it
         self.graph = generate_graph(self.human_agents, self.destination_agents)
 
-        print(self.graph)
+        # print(self.graph)
 
         # A correlation between agents and nodes on the internal graph
         self.human_agents_locations = self.get_agents_locations(
@@ -44,9 +44,15 @@ class Environment:
         # set simulation duration in minutes
         self.simulation_duration = simulation_duration
 
+        # list of human dissatisfaction at the of the simulation
+        self.dsat_list = dict()
+
     def run(self, time_step=10):
         while self.schedule.qsize() > 0 and self.total_time_elapsed < self.simulation_duration:
             self.execute(time_step)
+        while self.schedule.qsize() > 0:
+            time, human_agent, action, destination_agent = self.schedule.get()
+            self.dsat_list.append((human_agent.dissatisfaction(self.total_time_elapsed),human_agent.id))
 
     def execute(self, time_step=10):
         """
@@ -63,8 +69,8 @@ class Environment:
         while self.schedule.qsize() > 0 and self.schedule.queue[0][0] < self.total_time_elapsed:
             time, human_agent, action, destination_agent = self.schedule.get()
 
-            print("Se realizo la accion {0} por el agente humano {1} sobre el agente de destino {2} en el tiempo {3}\n\n".format(
-                action, human_agent, destination_agent, time))
+            # print("Se realizo la accion {0} por el agente humano {1} sobre el agente de destino {2} en el tiempo {3}\n\n".format(
+            #     action, human_agent, destination_agent, time))
 
             if action == 'arrival':  # arrival action
                 self.arrival(time, human_agent, destination_agent)
@@ -154,3 +160,4 @@ class Environment:
                 self.human_agents_locations[human_agent], self.destination_agents_locations, self.graph, self.number_of_needs)
             self.schedule.put(
                 (arrival_time + time, human_agent, 'arrival', destination))
+        
