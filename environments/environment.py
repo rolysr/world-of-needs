@@ -11,7 +11,8 @@ class Environment:
     """
 
     def __init__(self, number_human_agents, number_destination_agents, number_of_needs, 
-        simulation_duration, gini_coef, mean_income, human_needs_density, offers_average_price, store_offers_density):  # Class constructor
+        simulation_duration, gini_coef, mean_income, human_needs_density, offers_average_price, 
+        store_offers_density, stores_total_budget):  # Class constructor
         # check inputs are valid (to_do)
 
         # get number of human and destination agents
@@ -22,7 +23,8 @@ class Environment:
         self.human_agents = generate_human_agents(
             number_human_agents, number_of_needs, gini_coef, mean_income, human_needs_density)
         self.destination_agents = generate_destination_agents(
-            number_destination_agents, number_of_needs, store_offers_density, offers_average_price)
+            number_destination_agents, number_of_needs, store_offers_density, 
+            offers_average_price, stores_total_budget)
 
         # set number of needs
         self.number_of_needs = number_of_needs

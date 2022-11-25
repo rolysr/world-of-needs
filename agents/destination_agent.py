@@ -9,12 +9,12 @@ class DestinationAgent(Agent):
         A class to denote a destination agent
     """
 
-    def __init__(self, number_of_needs, store_offers_density, offers_average_price):  # class constructor
+    def __init__(self, number_of_needs, store_offers_density, offers_average_price, store_budget):  # class constructor
         super().__init__()  # init parent Agent class
         # Parameters for the creation of this instance of destination agent
         self.params = (number_of_needs, store_offers_density, offers_average_price)
         # The needs this can satisfy by offers. (need_id, need_available_amout, price)
-        self.offers = generate_destination_offers(number_of_needs, store_offers_density, offers_average_price)
+        self.offers = generate_destination_offers(number_of_needs, store_offers_density, offers_average_price, store_budget)
         # Total time the agent works
         self.total_time_working = generate_destination_working_time()
         # During execution it denotes the time the system will be available for the next client
