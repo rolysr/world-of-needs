@@ -19,6 +19,6 @@ if __name__ == "__main__":
     simulation_duration = 100000
     gini_coef, mean_income = 0.5, 1000
     env = Environment(number_human_agents, number_destination_agents,
-                      number_needs, simulation_duration, gini_coef, mean_income)
+                    number_needs, simulation_duration, gini_coef, mean_income)
     env.run(5)
     # run_income_generator_test()

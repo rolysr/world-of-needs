@@ -28,7 +28,10 @@ def quality_coefficient(vector1: list(), vector2: list()):
     if len(vector1) != len(vector2): # if vectors don't have same length then return 0 quality
         return 0
 
-    return 1/(1 + (scalar_product(vector1, vector2) / (vector_norm(vector1)**2))) # quality coefficient
+    sp = scalar_product(vector1, vector2)
+    nm = vector_norm(vector1)**2
+
+    return 1/(1 + (sp/nm)) # quality coefficient
 
 def scalar_product(vector1, vector2):
     """
