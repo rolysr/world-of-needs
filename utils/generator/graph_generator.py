@@ -22,7 +22,7 @@ def generate_graph(human_agents, destination_agents):
     for i in range(n):
         row = []
         for j in range(m):
-            row.append(Node([], [], i*m+j))
+            row.append(Node([], i*m+j))
         nodes.append(row)
 
     # This create the edges for the nodes
@@ -46,13 +46,12 @@ def generate_graph(human_agents, destination_agents):
     # create graph
     graph = Graph(final_nodes)
 
-    # locate human and destinatio agents
-    elems = human_agents + destination_agents
-    graph.locate_elems(elems)
+    # locate human and destination agents
+    human_agents_locations, destination_agents_locations = graph.locate_agents(human_agents, destination_agents)
 
-    return graph
+    return graph, human_agents_locations, destination_agents_locations
 
 
 def valid_position_in_matrix(rows, columns, x, y):
-    """Method for determining if a pair (x, y) is contained in a matrix of rows x columns size"""
+    """Method for determining if a pair (x, y) is contained in a matrix of rows and columns size"""
     return x >= 0 and y >= 0 and x < rows and y < columns
