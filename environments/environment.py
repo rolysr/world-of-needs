@@ -3,6 +3,7 @@ from utils.generator.environment_schedule_generator import generate_environment_
 from utils.generator.graph_generator import *
 from utils.generator.human_generators.human_generator import generate_human_agents
 from agents.destination_agent import *
+from utils.product_name_strings import PRODUCT_NAME_STRINGS
 
 
 class Environment:
@@ -10,9 +11,9 @@ class Environment:
         Abstract class representing an Environment
     """
 
-    def __init__(self, number_human_agents, number_destination_agents, number_of_needs, 
-        simulation_duration, gini_coef, mean_income, human_needs_density, offers_average_price, 
-        store_offers_density, stores_total_budget):  # Class constructor
+    def __init__(self, number_human_agents, number_destination_agents, number_of_needs,
+                 simulation_duration, gini_coef, mean_income, human_needs_density, offers_average_price,
+                 store_offers_density, stores_total_budget):  # Class constructor
         # check inputs are valid (to_do)
 
         # get number of human and destination agents
@@ -23,7 +24,7 @@ class Environment:
         self.human_agents = generate_human_agents(
             number_human_agents, number_of_needs, gini_coef, mean_income, human_needs_density)
         self.destination_agents = generate_destination_agents(
-            number_destination_agents, number_of_needs, store_offers_density, 
+            number_destination_agents, number_of_needs, store_offers_density,
             offers_average_price, stores_total_budget)
 
         # set number of needs
@@ -34,7 +35,7 @@ class Environment:
         self.graph, self.human_agents_locations, self.destination_agents_locations = generate_graph(
             self.human_agents, self.destination_agents)
 
-        print(self.graph)
+        # print(self.graph)
 
         # The main data structure for updating the environment. This field is a priority queue with the actions that have to be executed on the environment
         # Each element has form (time_to_be_executed, human_agent_to_execute_action, other_data)
@@ -49,6 +50,16 @@ class Environment:
 
         # list of human dissatisfaction at the of the simulation
         self.dsat_list = dict()
+
+        # Log record in form of tuples (time, narration)
+        self.log_record = list()
+        # To shorten human and destination agents Ids
+        self.human_agents_id_map = dict()
+        for i in range(number_human_agents):
+            self.human_agents_id_map[self.human_agents[i]] = i
+        self.destination_agents_id_map = dict()
+        for i in range(number_destination_agents):
+            self.destination_agents_id_map[self.destination_agents[i]] = i
 
     def run(self, time_step=10):
         while self.schedule.qsize() > 0 and self.total_time_elapsed < self.simulation_duration:
@@ -73,8 +84,23 @@ class Environment:
         while self.schedule.qsize() > 0 and self.schedule.queue[0][0] < self.total_time_elapsed:
             time, human_agent, action, destination_agent = self.schedule.get()
 
-            print("Action {0} completed by human agent {1} over destination agent {2} at minutes elapsed {3}\n\n".format(
-                action, human_agent, destination_agent, time))
+            # print("Action {0} completed by human agent {1} over destination agent {2} at minutes elapsed {3}\n\n".format(
+            #     action, human_agent, destination_agent, time))
+            # Log the action into the record.
+            if action == 'arrival':
+                self.log_record.append((time, "{3}: The human agent {1} arrived at destination agent {2}.".format(
+                    action, self.human_agents_id_map[human_agent], self.destination_agents_id_map[destination_agent], time)))
+                human_agent.log_record.append((time, "{3}: Arrived at destination agent {2}.".format(
+                    action, self.human_agents_id_map[human_agent], self.destination_agents_id_map[destination_agent], time)))
+                destination_agent.log_record.append((time, "{3}: The human agent {1} arrived.".format(
+                    action, self.human_agents_id_map[human_agent], self.destination_agents_id_map[destination_agent], time)))
+            elif action == 'negotiation':
+                self.log_record.append((time, "{3}: The human agent {1} finishes a negotiation with destination agent {2}.".format(
+                    action, self.human_agents_id_map[human_agent], self.destination_agents_id_map[destination_agent], time)))
+                human_agent.log_record.append((time, "{3}: Finishes a negotiation with destination agent {2}.".format(
+                    action, self.human_agents_id_map[human_agent], self.destination_agents_id_map[destination_agent], time)))
+                destination_agent.log_record.append((time, "{3}: The human agent {1} finished a negotiation.".format(
+                    action, self.human_agents_id_map[human_agent], self.destination_agents_id_map[destination_agent], time)))
 
             if action == 'arrival':  # arrival action
                 self.arrival(time, human_agent, destination_agent)
@@ -91,7 +117,7 @@ class Environment:
     def negotiation(self, time, human_agent, destination_agent: DestinationAgent):
         """
             Simulates the process of negotiation between human agent and destination agent.
-            The human agent receives the destinations offers and decides to buy or not
+            The human agent receives the destination offers and decides to buy or not
             according to his internal needs.
             The destination agent receives human agent offer request and updates internal state
             If destination agent can satisfy human agent's needs, then human agent's internal state
@@ -101,15 +127,47 @@ class Environment:
 
         # the agent receives the offers and try to make a valid request of needs
         request = human_agent.offers_requests(offers)
+        total_value = 0
+        for (id, amount) in request:
+            for (ido, _, price) in destination_agent.offers:
+                if id == ido:
+                    total_value += amount*price
 
         # the human agent request is processed by the destination agent
         destination_agent.process_offers_requests(request)
+
+        if total_value > 0:
+            main_narration_string = "{0} units of {1}".format(
+                request[0][1], PRODUCT_NAME_STRINGS[request[0][0]])
+            for i in range(1, len(request)):
+                (id, amount) = request[i]
+                main_narration_string += ", {0} units of {1}".format(
+                    amount, PRODUCT_NAME_STRINGS[id])
+
+            self.log_record.append((time, "{2}: The human agent {0} traded with destination agent {1} ".format(
+                self.human_agents_id_map[human_agent], self.destination_agents_id_map[destination_agent], time)+main_narration_string+" for a total value of {0} coins".format(total_value)))
+            human_agent.log_record.append((time, "{2}: Bought from destination agent {1} ".format(
+                self.human_agents_id_map[human_agent], self.destination_agents_id_map[destination_agent], time)+main_narration_string+" for a total value of {0} coins".format(total_value)))
+            destination_agent.log_record.append((time, "{2}: Sold to the human agent {0} ".format(
+                self.human_agents_id_map[human_agent], self.destination_agents_id_map[destination_agent], time)+main_narration_string+" for a total value of {0} coins".format(total_value)))
+        else:
+            self.log_record.append((time, "{2}: The human agent {0} did not trade with destination agent {1}.".format(
+                self.human_agents_id_map[human_agent], self.destination_agents_id_map[destination_agent], time)))
+            human_agent.log_record.append((time, "{2}: Bought nothing from destination agent {1}.".format(
+                self.human_agents_id_map[human_agent], self.destination_agents_id_map[destination_agent], time)))
+            destination_agent.log_record.append((time, "{2}: Sold nothing to the human agent {0}.".format(
+                self.human_agents_id_map[human_agent], self.destination_agents_id_map[destination_agent], time)))
 
         destination_agent.number_current_clients -= 1
         if destination_agent.number_current_clients > 0:
             negotiation_time = destination_agent.attention_time()  # negotiation time
             destination_agent.next_available_time = time + negotiation_time
             actual_human_agent = destination_agent.queue.get()
+
+            actual_human_agent.log_record.append((time, "{2}: Starts a negotiation with destination agent {1}.".format(
+                self.human_agents_id_map[actual_human_agent], self.destination_agents_id_map[destination_agent], time)))
+            destination_agent.log_record.append((time, "{2}: The human agent {0} started a negotiation.".format(
+                self.human_agents_id_map[actual_human_agent], self.destination_agents_id_map[destination_agent], time)))
 
             # update available time for next agent
             self.schedule.put((destination_agent.next_available_time, actual_human_agent,
@@ -162,7 +220,7 @@ class Environment:
             self.dsat_list[human_agent] = human_agent.dissatisfaction(
                 self.total_time_elapsed)
 
-    def reset(self, reset_human_agents_flag = True, reset_destination_agents_flag = True):
+    def reset(self, reset_human_agents_flag=True, reset_destination_agents_flag=True):
         """
             Reset function for the environment. This function should be called just before
             running again the environment.
@@ -178,3 +236,16 @@ class Environment:
             self.human_agents, self.human_agents_locations, self.destination_agents_locations, self.graph, self.number_of_needs)
         self.total_time_elapsed = 0
         self.dsat_list = dict()
+
+    def narrate(self, initial_time=0, end_time=None):
+        """
+            Prints the actions done by the agents in the given time inteval.
+            - initial_time is 0 by defualt
+            - end_time is the ending time of the simulation by default
+        """
+        if end_time == None:
+            end_time = self.simulation_duration
+        for tuple in self.log_record:
+            time = tuple[0]
+            if initial_time <= time and time <= end_time:
+                print(tuple[1])
