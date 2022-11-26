@@ -24,8 +24,9 @@ def generate_destination_offers(number_of_needs, store_offers_density, offers_av
         offers.append((i, amount, final_price))
         total_cost += offers_average_price[i] * amount
 
-    normalizing_factor = store_budget / total_cost
-    for i in range(len(offers)):
-        offers[i] = (offers[i][0], offers[i][1] *
-                     normalizing_factor, offers[i][2])
+    if total_cost > 0:
+        normalizing_factor = store_budget / total_cost
+        for i in range(len(offers)):
+            offers[i] = (offers[i][0], offers[i][1] *
+                        normalizing_factor, offers[i][2])
     return offers
