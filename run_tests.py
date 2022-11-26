@@ -18,7 +18,12 @@ if __name__ == "__main__":
     number_needs = 6
     simulation_duration = 100000
     gini_coef, mean_income = 0.5, 1000
+    human_needs_density = [0.4, 0.7, 0.1, 1.5, 2, 1]
+    offers_average_price = [100, 100, 100, 100, 100, 100]
+    store_offers_density = [1, 1, 1, 1, 1, 1]
+    stores_total_budget = 10000
     env = Environment(number_human_agents, number_destination_agents,
-                    number_needs, simulation_duration, gini_coef, mean_income)
+                    number_needs, simulation_duration, gini_coef, mean_income, human_needs_density, offers_average_price, 
+        store_offers_density, stores_total_budget)
     env.run(5)
     # run_income_generator_test()

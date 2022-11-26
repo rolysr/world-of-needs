@@ -54,7 +54,7 @@ class Environment:
         while self.schedule.qsize() > 0 and self.total_time_elapsed < self.simulation_duration:
             self.execute(time_step)
         for human_agent in self.human_agents:
-            if not (human_agent.id in self.dsat_list.keys()):
+            if not (human_agent in self.dsat_list.keys()):
                 self.dsat_list[human_agent] = human_agent.dissatisfaction(
                     self.total_time_elapsed)
 
