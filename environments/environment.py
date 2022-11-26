@@ -5,6 +5,7 @@ from utils.generator.human_generators.human_generator import generate_human_agen
 from agents.destination_agent import *
 from utils.product_name_strings import PRODUCT_NAME_STRINGS
 
+
 class Environment:
     """
         Abstract class representing an Environment
@@ -94,11 +95,11 @@ class Environment:
                 destination_agent.log_record.append((time, "{3}: The human agent {1} arrived.".format(
                     action, self.human_agents_id_map[human_agent], self.destination_agents_id_map[destination_agent], time)))
             elif action == 'negotiation':
-                self.log_record.append((time, "{3}: The human agent {1} starts a negotiation with destination agent {2}.".format(
+                self.log_record.append((time, "{3}: The human agent {1} finishes a negotiation with destination agent {2}.".format(
                     action, self.human_agents_id_map[human_agent], self.destination_agents_id_map[destination_agent], time)))
-                human_agent.log_record.append((time, "{3}: Starts a negotiation with destination agent {2}.".format(
+                human_agent.log_record.append((time, "{3}: Finishes a negotiation with destination agent {2}.".format(
                     action, self.human_agents_id_map[human_agent], self.destination_agents_id_map[destination_agent], time)))
-                destination_agent.log_record.append((time, "{3}: The human agent {1} started a negotiation.".format(
+                destination_agent.log_record.append((time, "{3}: The human agent {1} finished a negotiation.".format(
                     action, self.human_agents_id_map[human_agent], self.destination_agents_id_map[destination_agent], time)))
 
             if action == 'arrival':  # arrival action
@@ -128,7 +129,7 @@ class Environment:
         request = human_agent.offers_requests(offers)
         total_value = 0
         for (id, amount) in request:
-            for (ido, amounto, price) in destination_agent.offers:
+            for (ido, _, price) in destination_agent.offers:
                 if id == ido:
                     total_value += amount*price
 
@@ -162,6 +163,11 @@ class Environment:
             negotiation_time = destination_agent.attention_time()  # negotiation time
             destination_agent.next_available_time = time + negotiation_time
             actual_human_agent = destination_agent.queue.get()
+
+            actual_human_agent.log_record.append((time, "{2}: Starts a negotiation with destination agent {1}.".format(
+                self.human_agents_id_map[actual_human_agent], self.destination_agents_id_map[destination_agent], time)))
+            destination_agent.log_record.append((time, "{2}: The human agent {0} started a negotiation.".format(
+                self.human_agents_id_map[actual_human_agent], self.destination_agents_id_map[destination_agent], time)))
 
             # update available time for next agent
             self.schedule.put((destination_agent.next_available_time, actual_human_agent,

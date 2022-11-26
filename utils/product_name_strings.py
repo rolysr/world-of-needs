@@ -1,7 +1,7 @@
 # Names of 25 common products
 PRODUCT_NAME_STRINGS = [
     "medicine",
-    "pain killers",
+    "painkillers",
     "condoms",
     "antihistamines",
     "antibiotics",
