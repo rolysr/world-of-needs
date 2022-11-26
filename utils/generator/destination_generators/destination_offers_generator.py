@@ -1,20 +1,32 @@
-from random import randrange
+from numpy.random import *
+from math import *
 
 
-def generate_destination_offers(number_of_needs):
+def generate_destination_offers(number_of_needs, store_offers_density, offers_average_price, store_budget):
     """
         Generate destination offers.
         This takes a number of needs and gets random needs to satisfy
         in a random amount
     """
-    number_of_offers = randrange(1, number_of_needs + 1) # number of offers this agent wil supply
-    offer_indexes = [i for i in range(number_of_needs)]
     offers = []
-    
-    # select random needs to make offers
-    for i in range(number_of_offers):
-        rand_index = offer_indexes[randrange(0, len(offer_indexes))]
-        offers.append((rand_index, 1000, 10)) # an offer is a tuple (need_id, amount, price)
-        offer_indexes.remove(rand_index)
 
+    # select random needs to make offers
+    total_cost = 0
+    for i in range(number_of_needs):
+        X = uniform(0, 1)
+        threshold = store_offers_density[i]/(store_offers_density[i]+1)
+        if X >= threshold:
+            continue
+        price_factor = uniform(0.8, 1.2)
+        final_price = offers_average_price[i]*price_factor
+        amount = exponential(2) * (store_offers_density[i]+1)
+        # a goal need is a tuple (priority, need_id, needed_amount)
+        offers.append((i, amount, final_price))
+        total_cost += offers_average_price[i] * amount
+
+    if total_cost > 0:
+        normalizing_factor = store_budget / total_cost
+        for i in range(len(offers)):
+            offers[i] = (offers[i][0], offers[i][1] *
+                        normalizing_factor, offers[i][2])
     return offers

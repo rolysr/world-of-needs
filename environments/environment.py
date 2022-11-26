@@ -4,34 +4,37 @@ from utils.generator.graph_generator import *
 from utils.generator.human_generators.human_generator import generate_human_agents
 from agents.destination_agent import *
 
+
 class Environment:
     """
         Abstract class representing an Environment
     """
 
-    def __init__(self, number_human_agents, number_destination_agents, number_of_needs, simulation_duration, gini_coef, mean_income):  # Class constructor
+    def __init__(self, number_human_agents, number_destination_agents, number_of_needs, 
+        simulation_duration, gini_coef, mean_income, human_needs_density, offers_average_price, 
+        store_offers_density, stores_total_budget):  # Class constructor
         # check inputs are valid (to_do)
+
+        # get number of human and destination agents
+        self.number_human_agents = number_human_agents
+        self.number_destination_agents = number_destination_agents
 
         # Generate random agents
         self.human_agents = generate_human_agents(
-            number_human_agents, number_of_needs, gini_coef, mean_income)
+            number_human_agents, number_of_needs, gini_coef, mean_income, human_needs_density)
         self.destination_agents = generate_destination_agents(
-            number_destination_agents, number_of_needs)
+            number_destination_agents, number_of_needs, store_offers_density, 
+            offers_average_price, stores_total_budget)
 
         # set number of needs
         self.number_of_needs = number_of_needs
 
         # The graph to represent the environment internally
         # Here we generate a graph and locate generated humans and destinations on it
-        self.graph = generate_graph(self.human_agents, self.destination_agents)
+        self.graph, self.human_agents_locations, self.destination_agents_locations = generate_graph(
+            self.human_agents, self.destination_agents)
 
         print(self.graph)
-
-        # A correlation between agents and nodes on the internal graph
-        self.human_agents_locations = self.get_agents_locations(
-            self.human_agents, self.graph)
-        self.destination_agents_locations = self.get_agents_locations(
-            self.destination_agents, self.graph)
 
         # The main data structure for updating the environment. This field is a priority queue with the actions that have to be executed on the environment
         # Each element has form (time_to_be_executed, human_agent_to_execute_action, other_data)
@@ -44,9 +47,16 @@ class Environment:
         # set simulation duration in minutes
         self.simulation_duration = simulation_duration
 
+        # list of human dissatisfaction at the of the simulation
+        self.dsat_list = dict()
+
     def run(self, time_step=10):
         while self.schedule.qsize() > 0 and self.total_time_elapsed < self.simulation_duration:
             self.execute(time_step)
+        for human_agent in self.human_agents:
+            if not (human_agent in self.dsat_list.keys()):
+                self.dsat_list[human_agent] = human_agent.dissatisfaction(
+                    self.total_time_elapsed)
 
     def execute(self, time_step=10):
         """
@@ -63,7 +73,7 @@ class Environment:
         while self.schedule.qsize() > 0 and self.schedule.queue[0][0] < self.total_time_elapsed:
             time, human_agent, action, destination_agent = self.schedule.get()
 
-            print("Se realizo la accion {0} por el agente humano {1} sobre el agente de destino {2} en el tiempo {3}\n\n".format(
+            print("Action {0} completed by human agent {1} over destination agent {2} at minutes elapsed {3}\n\n".format(
                 action, human_agent, destination_agent, time))
 
             if action == 'arrival':  # arrival action
@@ -78,20 +88,7 @@ class Environment:
         """
         return self.total_time_elapsed >= self.simulation_duration
 
-    def get_agents_locations(self, agents, graph):
-        """
-            Given an environment graph returns a dict[agent] = node
-            which represents a location in the graph for each agent
-        """
-        agent_location = dict()
-        for node in graph.nodes:
-            for elem in node.values:
-                if elem in agents:
-                    agent_location[elem] = node
-
-        return agent_location
-
-    def negotiation(self, time, human_agent, destination_agent : DestinationAgent):
+    def negotiation(self, time, human_agent, destination_agent: DestinationAgent):
         """
             Simulates the process of negotiation between human agent and destination agent.
             The human agent receives the destinations offers and decides to buy or not
@@ -112,18 +109,21 @@ class Environment:
         if destination_agent.number_current_clients > 0:
             negotiation_time = destination_agent.attention_time()  # negotiation time
             destination_agent.next_available_time = time + negotiation_time
-            actual_human_agent=destination_agent.queue.get()
+            actual_human_agent = destination_agent.queue.get()
 
             # update available time for next agent
             self.schedule.put((destination_agent.next_available_time, actual_human_agent,
                                'negotiation', destination_agent))
 
         # once the human finishes negotiation process, tries to move to another place in case there is needs left
-        if len(human_agent.needs) > 0:
+        if len(human_agent.needs) > 0 and len(human_agent.visited_destinations) != self.number_destination_agents:
             destination, arrival_time = human_agent.next_destination_to_move(
                 self.human_agents_locations[human_agent], self.destination_agents_locations, self.graph, self.number_of_needs)
             self.schedule.put(
                 (arrival_time + time, human_agent, 'arrival', destination))
+        else:
+            self.dsat_list[human_agent] = human_agent.dissatisfaction(
+                self.total_time_elapsed)
 
     def arrival(self, time, human_agent, destination_agent):
         """
@@ -136,6 +136,9 @@ class Environment:
         human_agent.visited_destinations.append(
             destination_agent)  # the agent won't get back to this destination
 
+        # update current human agent's position
+        self.human_agents_locations[human_agent] = self.destination_agents_locations[destination_agent]
+
         if destination_agent.total_time_working >= time:  # if agent got there at working time
             destination_agent.number_current_clients += 1
             destination_agent.queue.put(human_agent)
@@ -143,14 +146,35 @@ class Environment:
             if destination_agent.number_current_clients == 1:
                 negotiation_time = destination_agent.attention_time()  # negotiation time
                 destination_agent.next_available_time = time + negotiation_time
-                actual_human_agent=destination_agent.queue.get()
+                actual_human_agent = destination_agent.queue.get()
 
                 # update available time for next agent
                 self.schedule.put((destination_agent.next_available_time, actual_human_agent,
                                    'negotiation', destination_agent))
 
-        else:  # in case the human agent does not want to stay in queue redifines his plan
+        # in case the human agent does not want to stay in queue and assuming there is more places to visit, then redifines his plan
+        elif len(human_agent.needs) > 0 and len(human_agent.visited_destinations) != self.number_destination_agents:
             destination, arrival_time = human_agent.next_destination_to_move(
                 self.human_agents_locations[human_agent], self.destination_agents_locations, self.graph, self.number_of_needs)
             self.schedule.put(
                 (arrival_time + time, human_agent, 'arrival', destination))
+        else:
+            self.dsat_list[human_agent] = human_agent.dissatisfaction(
+                self.total_time_elapsed)
+
+    def reset(self, reset_human_agents_flag = True, reset_destination_agents_flag = True):
+        """
+            Reset function for the environment. This function should be called just before
+            running again the environment.
+        """
+        if reset_human_agents_flag:
+            for human_agent in self.human_agents:
+                human_agent.reset()
+        if reset_destination_agents_flag:
+            for destination_agent in self.destination_agents:
+                destination_agent.reset()
+
+        self.schedule = generate_environment_schedule(
+            self.human_agents, self.human_agents_locations, self.destination_agents_locations, self.graph, self.number_of_needs)
+        self.total_time_elapsed = 0
+        self.dsat_list = dict()

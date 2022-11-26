@@ -9,10 +9,12 @@ class DestinationAgent(Agent):
         A class to denote a destination agent
     """
 
-    def __init__(self, number_of_needs):  # class constructor
+    def __init__(self, number_of_needs, store_offers_density, offers_average_price, store_budget):  # class constructor
         super().__init__()  # init parent Agent class
+        # Parameters for the creation of this instance of destination agent
+        self.params = (number_of_needs, store_offers_density, offers_average_price)
         # The needs this can satisfy by offers. (need_id, need_available_amout, price)
-        self.offers = generate_destination_offers(number_of_needs)
+        self.offers = generate_destination_offers(number_of_needs, store_offers_density, offers_average_price, store_budget)
         # Total time the agent works
         self.total_time_working = generate_destination_working_time()
         # During execution it denotes the time the system will be available for the next client
@@ -41,3 +43,24 @@ class DestinationAgent(Agent):
 
     def __str__(self) -> str:
         return "Destination Agent:\n id: {}\n offers: {}\n attention_time: {}\n total_time_working: {}\n next_available_time: {}\n number_current_clients: {}\n".format(self.id, self.offers, self.attention_time, self.total_time_working, self.next_available_time, self.number_current_clients)
+
+    def reset(self):
+        """
+            Reset function for the destination agent. This function should be called 
+            just before running again the environment. 
+        """
+        new_offers = generate_destination_offers(self.params[0], self.params[1], self.params[2])
+        for new_offer in new_offers:
+            ok = False
+            for i in range(len(self.offers)):
+                actual_offer = self.offers[i]
+                if new_offer[0] == actual_offer[0]:
+                    updated_amount = new_offer[2]+actual_offer[2]
+                    self.offers[i] = (actual_offer[0], updated_amount, actual_offer[2])
+                    ok = True
+                    break
+            if not ok:
+                self.offers.append(new_offer)
+        self.next_available_time = 0
+        self.number_current_clients = 0  
+        self.queue = Queue()

@@ -5,8 +5,8 @@ from utils.generator.human_generators.human_balance_generator import generate_hu
 from utils.generator.human_generators.human_needs_generator import generate_human_needs
 from utils.generator.human_generators.human_speed_generator import generate_human_speed
 from utils.generator.human_generators.human_income_generator import generate_human_income
-from utils.graph.algorithms.astar import astar
-from utils.graph.algorithms.astar_heuristic import astar_heuristic
+from utils.graph.algorithms.multigoal_astar import multigoal_astar
+from utils.graph.algorithms.multigoal_astar_heuristic import multigoal_astar_heuristic
 from utils.graph.algorithms.dijkstra import dijkstra
 
 # up to add to settings file (value taken from https://news.gallup.com/poll/166211/worldwide-median-household-income-000.aspx)
@@ -22,17 +22,20 @@ class HumanAgent(Agent):
         Class that represents a human agent
     """
 
-    def __init__(self, number_of_needs, gini_coef, mean_income):  # Class constructor
+    def __init__(self, number_of_needs, gini_coef, mean_income, human_needs_density):  # Class constructor
         super().__init__()
+        # Parameters for the creation of this instance of human agent
+        self.params = (number_of_needs, gini_coef,
+                       mean_income, human_needs_density)
         # This has to be generater using random variables (need_priority, need_id, amount_to_satisfy)
-        self.needs = generate_human_needs(number_of_needs)
-        # This has to be generated using random variables
-        self.base_balance = self.balance
+        self.needs = generate_human_needs(number_of_needs, human_needs_density)
         # speed on m/s, this mus be generated with a random variable
         self.speed = generate_human_speed()
         self.visited_destinations = []  # destinations visited by the human agent
         self.income = generate_human_income(gini_coef, mean_income)
         self.balance = generate_human_balance(self.income)
+        # This has to be generated using random variables
+        self.base_balance = self.balance
 
     def offers_requests(self, offers):
         """
@@ -78,25 +81,29 @@ class HumanAgent(Agent):
         best_destination_agent = None  # best destination agent
         destination_agents_locations = {destination_agent: destination_agents_locations[destination_agent] for destination_agent in destination_agents_locations.keys(
         ) if destination_agent not in self.visited_destinations}  # set possible destination to go if not visited
+        
         # get real distance for all destination agents
         destinations_real_distances = dijkstra(human_location, graph)
-        minimum_real_distance, minimum_heuristic_distance = inf, inf  # minimum distances
+        minimum_real_distance = inf  # minimum distances
+        
+        # get heuristic function
+        heuristic_function = multigoal_astar_heuristic(
+            destination_agents_locations, graph, self, destination_agents_locations.keys(), number_of_needs)  # get astar heuristic function
+        
+        # execute multigoal astar
+        best_destination_node = multigoal_astar(
+            human_location, destination_agents_locations.values(), graph, heuristic_function)
 
-        for destination_agent in destination_agents_locations.keys():  # for each desination
-            # destination agent location
-            location = destination_agents_locations[destination_agent]
-            real_dist = destinations_real_distances[location]
-            heuristic_function = astar_heuristic(
-                location, graph, self, destination_agent, number_of_needs)  # get astar heuristic function
-            heuristic_distance = astar(
-                human_location, location, graph, heuristic_function)
+        # update minimum real distance
+        minimum_real_distance = destinations_real_distances[best_destination_node]
 
-            if heuristic_distance < minimum_heuristic_distance:  # update the node with the best heuristic distance
-                best_destination_agent = destination_agent
-                minimum_heuristic_distance = heuristic_distance
-                minimum_real_distance = real_dist
-
-        travel_time = minimum_real_distance / self.speed  # calculate time for the travel
+        # calculate time for the travel
+        travel_time = minimum_real_distance / self.speed
+        
+        # get best destination agent assuming there is no two destination agents at the same place
+        for destination in destination_agents_locations.keys():
+            if destination_agents_locations[destination] == best_destination_node:
+                best_destination_agent = destination
 
         # return best destination to go and the travel time it consumes
         return best_destination_agent, travel_time
@@ -120,8 +127,31 @@ class HumanAgent(Agent):
         for tuple in self.needs:
             needs_dissatisfaction += normalized_income_rate*tuple[0]*tuple[2]
         # time dissatisfaction formula
-        time_dissatisfaction = time*normalized_income_rate * TIME_DISSATISFACTION_WEIGHTING_FACTOR
+        time_dissatisfaction = time*normalized_income_rate * \
+            TIME_DISSATISFACTION_WEIGHTING_FACTOR
         # money dissatisfaction formula
         money_dissatisfaction = (self.base_balance-self.balance)*(
             1 + 1.0/normalized_income_rate)*MONEY_DISSATISFACTION_WEIGHTING_FACTOR
         return needs_dissatisfaction+time_dissatisfaction+money_dissatisfaction
+
+    def reset(self):
+        """
+            Reset function for the human agent. This function should be called just 
+            before running again the environment. 
+        """
+        new_needs = generate_human_needs(self.params[0], self.params[3])
+        for new_need in new_needs:
+            ok = False
+            for i in range(len(self.needs)):
+                actual_need = self.needs[i]
+                if new_need[1] == actual_need[1]:
+                    updated_amount = new_need[2]+actual_need[2]
+                    self.needs[i] = (actual_need[0], actual_need[1], updated_amount)
+                    ok = True
+                    break
+            if not ok:
+                self.needs.append(new_need)
+
+        self.visited_destinations = []
+        self.balance += generate_human_balance(self.income)
+        self.base_balance = self.balance

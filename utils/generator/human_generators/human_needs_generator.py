@@ -1,20 +1,23 @@
-from queue import PriorityQueue
-from random import randrange
+from numpy.random import *
+from math import *
 
 
-def generate_human_needs(number_of_needs):
+def generate_human_needs(number_of_needs, human_needs_density):
     """
         A method for generating human needs
     """
-    number_of_goal_needs = randrange(1, number_of_needs + 1) # number of needs the agent needs to satisfy
-    goal_need_indexes = [i for i in range(number_of_needs)]
     goal_needs = []
-    
+
     # select random needs
-    for i in range(number_of_goal_needs):
-        rand_need_id = goal_need_indexes[randrange(0, len(goal_need_indexes))]
-        goal_needs.append((rand_need_id, rand_need_id, 5)) # a goal need is a tuple (priority, need_id, needed_amount)
-        goal_need_indexes.remove(rand_need_id)
+    for i in range(number_of_needs):
+        X = uniform(0, 1)
+        threshold = human_needs_density[i]/(human_needs_density[i]+1)
+        if X >= threshold:
+            continue
+        priority = uniform(0, 100)
+        amount = exponential(2) * (human_needs_density[i]+1)
+        # a goal need is a tuple (priority, need_id, needed_amount)
+        goal_needs.append((priority, i, amount))
 
     goal_needs.sort()
     return goal_needs
