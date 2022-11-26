@@ -24,6 +24,7 @@ if __name__ == "__main__":
     stores_total_budget = 10000
     env = Environment(number_human_agents, number_destination_agents,
                     number_needs, simulation_duration, gini_coef, mean_income, human_needs_density, offers_average_price, 
-        store_offers_density, stores_total_budget)
+                    store_offers_density, stores_total_budget)
     env.run(5)
+    env.narrate()
     # run_income_generator_test()
