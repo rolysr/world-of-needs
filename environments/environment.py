@@ -3,7 +3,7 @@ from utils.generator.environment_schedule_generator import generate_environment_
 from utils.generator.graph_generator import *
 from utils.generator.human_generators.human_generator import generate_human_agents
 from agents.destination_agent import *
-
+from utils.product_name_strings import PRODUCT_NAME_STRINGS
 
 class Environment:
     """
@@ -85,11 +85,20 @@ class Environment:
 
             # print("Action {0} completed by human agent {1} over destination agent {2} at minutes elapsed {3}\n\n".format(
             #     action, human_agent, destination_agent, time))
+            # Log the action into the record.
             if action == 'arrival':
                 self.log_record.append((time, "{3}: The human agent {1} arrived at destination agent {2}.".format(
                     action, self.human_agents_id_map[human_agent], self.destination_agents_id_map[destination_agent], time)))
+                human_agent.log_record.append((time, "{3}: Arrived at destination agent {2}.".format(
+                    action, self.human_agents_id_map[human_agent], self.destination_agents_id_map[destination_agent], time)))
+                destination_agent.log_record.append((time, "{3}: The human agent {1} arrived.".format(
+                    action, self.human_agents_id_map[human_agent], self.destination_agents_id_map[destination_agent], time)))
             elif action == 'negotiation':
                 self.log_record.append((time, "{3}: The human agent {1} starts a negotiation with destination agent {2}.".format(
+                    action, self.human_agents_id_map[human_agent], self.destination_agents_id_map[destination_agent], time)))
+                human_agent.log_record.append((time, "{3}: Starts a negotiation with destination agent {2}.".format(
+                    action, self.human_agents_id_map[human_agent], self.destination_agents_id_map[destination_agent], time)))
+                destination_agent.log_record.append((time, "{3}: The human agent {1} started a negotiation.".format(
                     action, self.human_agents_id_map[human_agent], self.destination_agents_id_map[destination_agent], time)))
 
             if action == 'arrival':  # arrival action
@@ -107,7 +116,7 @@ class Environment:
     def negotiation(self, time, human_agent, destination_agent: DestinationAgent):
         """
             Simulates the process of negotiation between human agent and destination agent.
-            The human agent receives the destinations offers and decides to buy or not
+            The human agent receives the destination offers and decides to buy or not
             according to his internal needs.
             The destination agent receives human agent offer request and updates internal state
             If destination agent can satisfy human agent's needs, then human agent's internal state
@@ -117,9 +126,36 @@ class Environment:
 
         # the agent receives the offers and try to make a valid request of needs
         request = human_agent.offers_requests(offers)
+        total_value = 0
+        for (id, amount) in request:
+            for (ido, amounto, price) in destination_agent.offers:
+                if id == ido:
+                    total_value += amount*price
 
         # the human agent request is processed by the destination agent
         destination_agent.process_offers_requests(request)
+
+        if total_value > 0:
+            main_narration_string = "{0} units of {1}".format(
+                request[0][1], PRODUCT_NAME_STRINGS[request[0][0]])
+            for i in range(1, len(request)):
+                (id, amount) = request[i]
+                main_narration_string += ", {0} units of {1}".format(
+                    amount, PRODUCT_NAME_STRINGS[id])
+
+            self.log_record.append((time, "{2}: The human agent {0} traded with destination agent {1} ".format(
+                self.human_agents_id_map[human_agent], self.destination_agents_id_map[destination_agent], time)+main_narration_string+" for a total value of {0} coins".format(total_value)))
+            human_agent.log_record.append((time, "{2}: Bought from destination agent {1} ".format(
+                self.human_agents_id_map[human_agent], self.destination_agents_id_map[destination_agent], time)+main_narration_string+" for a total value of {0} coins".format(total_value)))
+            destination_agent.log_record.append((time, "{2}: Sold to the human agent {0} ".format(
+                self.human_agents_id_map[human_agent], self.destination_agents_id_map[destination_agent], time)+main_narration_string+" for a total value of {0} coins".format(total_value)))
+        else:
+            self.log_record.append((time, "{2}: The human agent {0} did not trade with destination agent {1}.".format(
+                self.human_agents_id_map[human_agent], self.destination_agents_id_map[destination_agent], time)))
+            human_agent.log_record.append((time, "{2}: Bought nothing from destination agent {1}.".format(
+                self.human_agents_id_map[human_agent], self.destination_agents_id_map[destination_agent], time)))
+            destination_agent.log_record.append((time, "{2}: Sold nothing to the human agent {0}.".format(
+                self.human_agents_id_map[human_agent], self.destination_agents_id_map[destination_agent], time)))
 
         destination_agent.number_current_clients -= 1
         if destination_agent.number_current_clients > 0:

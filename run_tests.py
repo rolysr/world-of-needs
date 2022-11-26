@@ -27,4 +27,10 @@ if __name__ == "__main__":
                     store_offers_density, stores_total_budget)
     env.run(5)
     env.narrate()
+    for human_agent in env.human_agents:
+        print(human_agent)
+        human_agent.narrate()
+    for destination_agent in env.destination_agents:
+        print(destination_agent)
+        destination_agent.narrate()
     # run_income_generator_test()
