@@ -34,7 +34,7 @@ class Environment:
         self.graph, self.human_agents_locations, self.destination_agents_locations = generate_graph(
             self.human_agents, self.destination_agents)
 
-        # print(self.graph)
+        print(self.graph)
 
         # The main data structure for updating the environment. This field is a priority queue with the actions that have to be executed on the environment
         # Each element has form (time_to_be_executed, human_agent_to_execute_action, other_data)
@@ -73,7 +73,7 @@ class Environment:
         while self.schedule.qsize() > 0 and self.schedule.queue[0][0] < self.total_time_elapsed:
             time, human_agent, action, destination_agent = self.schedule.get()
 
-            print("Action {0} realized by human agent {1} over destination agent {2} at minutes elapsed {3}\n\n".format(
+            print("Action {0} completed by human agent {1} over destination agent {2} at minutes elapsed {3}\n\n".format(
                 action, human_agent, destination_agent, time))
 
             if action == 'arrival':  # arrival action
