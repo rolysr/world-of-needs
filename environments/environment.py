@@ -240,7 +240,7 @@ class Environment:
     def narrate(self, initial_time=0, end_time=None):
         """
             Prints the actions done by the agents in the given time inteval.
-            - initial_time is 0 by defualt
+            - initial_time is 0 by default
             - end_time is the ending time of the simulation by default
         """
         if end_time == None:
