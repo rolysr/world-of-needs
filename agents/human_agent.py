@@ -126,7 +126,7 @@ class HumanAgent(Agent):
         # needs dissatisfaction formula
         needs_dissatisfaction = 0
         for tuple in self.needs:
-            needs_dissatisfaction += normalized_income_rate*tuple[0]*tuple[2]
+            needs_dissatisfaction += normalized_income_rate*tuple[0]*(tuple[2]**2)
 
         # time dissatisfaction formula
         time_dissatisfaction = time*normalized_income_rate * \
@@ -136,6 +136,16 @@ class HumanAgent(Agent):
         money_dissatisfaction = (self.base_balance-self.balance)*(
             1 + 1.0/normalized_income_rate)*MONEY_DISSATISFACTION_WEIGHTING_FACTOR
         return needs_dissatisfaction+time_dissatisfaction+money_dissatisfaction
+
+    def purchase_dissatisfaction(self):
+        """
+            Dissatisfaction purchase goal function that represents
+            how bad is a purchase for a human agent when shopping.
+            During negotiation process, human agent will try to get the
+            minimum of this function in order to have better global dissatisfaction
+            values at the end of the simulation.
+        """
+        pass
 
     def reset(self):
         """
