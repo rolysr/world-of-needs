@@ -137,16 +137,6 @@ class HumanAgent(Agent):
             1 + 1.0/normalized_income_rate)*MONEY_DISSATISFACTION_WEIGHTING_FACTOR
         return needs_dissatisfaction+time_dissatisfaction+money_dissatisfaction
 
-    def purchase_dissatisfaction(self):
-        """
-            Dissatisfaction purchase goal function that represents
-            how bad is a purchase for a human agent when shopping.
-            During negotiation process, human agent will try to get the
-            minimum of this function in order to have better global dissatisfaction
-            values at the end of the simulation.
-        """
-        pass
-
     def reset(self):
         """
             Reset function for the human agent. This function should be called just 
