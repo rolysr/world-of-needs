@@ -64,6 +64,7 @@ class DestinationAgent(Agent):
                     break
             if not ok:
                 self.offers.append(new_offer)
+                
         self.next_available_time = 0
         self.number_current_clients = 0  
         self.queue = Queue()

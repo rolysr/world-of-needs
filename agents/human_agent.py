@@ -123,19 +123,33 @@ class HumanAgent(Agent):
         # Also uses the income rate of the human agent
         normalized_income_rate = self.income / GLOBAL_HUMAN_AVERAGE_INCOME
 
-        # needs dissatisfaction formula
-        needs_dissatisfaction = 0
-        for tuple in self.needs:
-            needs_dissatisfaction += normalized_income_rate*tuple[0]*(tuple[2]**2)
-
         # time dissatisfaction formula
         time_dissatisfaction = time*normalized_income_rate * \
             TIME_DISSATISFACTION_WEIGHTING_FACTOR
-            
+        
+        purchase_dissatisfaction = self.purchase_dissatisfaction(self.income, self.needs, self.base_balance, self.balance)
+
+        return time_dissatisfaction + purchase_dissatisfaction
+
+    def purchase_dissatisfaction(self, income, needs, base_balance, balance):
+        """
+            Purchase dissatisfaction for getting the
+            quality after a human agent purchase process
+        """
+        # Let's use time, actual needs and balance to find a satisfaction function
+        # Also uses the income rate of the human agent
+        normalized_income_rate = income / GLOBAL_HUMAN_AVERAGE_INCOME
+
+        # needs dissatisfaction formula
+        needs_dissatisfaction = 0
+        for tuple in needs:
+            needs_dissatisfaction += normalized_income_rate*tuple[0]*(tuple[2]**2)
+
         # money dissatisfaction formula
-        money_dissatisfaction = (self.base_balance-self.balance)*(
+        money_dissatisfaction = (base_balance-balance)*(
             1 + 1.0/normalized_income_rate)*MONEY_DISSATISFACTION_WEIGHTING_FACTOR
-        return needs_dissatisfaction+time_dissatisfaction+money_dissatisfaction
+
+        return needs_dissatisfaction + money_dissatisfaction
 
     def reset(self):
         """
