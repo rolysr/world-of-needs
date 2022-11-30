@@ -1,5 +1,4 @@
 from math import inf
-from turtle import distance
 from agents.agent import Agent
 from utils.generator.human_generators.human_balance_generator import generate_human_balance
 from utils.generator.human_generators.human_needs_generator import generate_human_needs
@@ -8,6 +7,7 @@ from utils.generator.human_generators.human_income_generator import generate_hum
 from utils.graph.algorithms.multigoal_astar import multigoal_astar
 from utils.graph.algorithms.multigoal_astar_heuristic import multigoal_astar_heuristic
 from utils.graph.algorithms.dijkstra import dijkstra
+from utils.offers_requests_policies.brute_force_offers_requests_policy import brute_force_offers_requests_policy
 
 # up to add to settings file (value taken from https://news.gallup.com/poll/166211/worldwide-median-household-income-000.aspx)
 # 2920 is the annual value
@@ -44,30 +44,7 @@ class HumanAgent(Agent):
             to satisfy his needs.
             The returned request will be used by destination agents
         """
-        offers_requests = []
-
-        for i in range(len(offers)):
-            offer = offers[i]  # offer at position i
-
-            for j in range(len(self.needs)):
-                need = self.needs[j]  # need at position j
-
-                # if offer matches the need and then try to satisfy it as possible
-                if need[1] == offer[0]:
-                    need_amount, offer_amount, price = need[2], offer[1], offer[2]
-                    # product amount to be adquired
-                    amount_to_buy = min(
-                        need_amount, offer_amount, self.balance//price)
-
-                    if amount_to_buy > 0:  # if human is going to get some need then update his internal state
-                        self.needs[j] = (need[0], need[1],
-                                         need[2]-amount_to_buy)
-                        self.balance -= amount_to_buy*price  # update human balance
-                        # add a request with format (<offer_id>, amount_to_buy)
-                        offers_requests.append((offer[0], amount_to_buy))
-
-        # update needs, just keep track for unsatisfied ones
-        self.needs = [need for need in self.needs if need[2] > 0]
+        offers_requests, self.needs, self.balance = brute_force_offers_requests_policy(offers, self.needs, self.balance)
 
         return offers_requests
 

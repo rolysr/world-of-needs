@@ -20,7 +20,7 @@ def generate_destination_offers(number_of_needs, store_offers_density, offers_av
         price_factor = uniform(0.8, 1.2)
         final_price = offers_average_price[i]*price_factor
         amount = exponential(2) * (store_offers_density[i]+1)
-        # a goal need is a tuple (priority, need_id, needed_amount)
+        # a goal need is a tuple (offer_id, amount, price)
         offers.append((i, amount, final_price))
         total_cost += offers_average_price[i] * amount
 
@@ -29,4 +29,5 @@ def generate_destination_offers(number_of_needs, store_offers_density, offers_av
         for i in range(len(offers)):
             offers[i] = (offers[i][0], offers[i][1] *
                         normalizing_factor, offers[i][2])
+                        
     return offers
