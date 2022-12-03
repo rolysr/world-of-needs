@@ -13,7 +13,7 @@ class Environment:
 
     def __init__(self, number_human_agents, number_destination_agents, number_of_needs,
                  simulation_duration, gini_coef, mean_income, human_needs_density, offers_average_price,
-                 store_offers_density, stores_total_budget):  # Class constructor
+                 store_offers_density, stores_total_budget, store_distribution):  # Class constructor
         # check inputs are valid (to_do)
 
         # get number of human and destination agents
@@ -25,7 +25,7 @@ class Environment:
             number_human_agents, number_of_needs, gini_coef, mean_income, human_needs_density)
         self.destination_agents = generate_destination_agents(
             number_destination_agents, number_of_needs, store_offers_density,
-            offers_average_price, stores_total_budget)
+            offers_average_price, stores_total_budget, store_distribution)
 
         # set number of needs
         self.number_of_needs = number_of_needs
@@ -237,10 +237,22 @@ class Environment:
         self.total_time_elapsed = 0
         self.dsat_list = dict()
 
+    def run_x_times(self, dsat_evaluator, x=30, time_step=10):
+        """
+            Runs and resets the environment x times. 
+            Returns the average of evaluating the dissatisfaction list at the end of these runs.
+        """
+        dsat_evaluation_mean = 0
+        for i in range(x):
+            self.run(time_step)
+            dsat_evaluation_mean += dsat_evaluator(self.dsat_list.values())
+            self.reset()
+        return dsat_evaluation_mean/x
+
     def narrate(self, initial_time=0, end_time=None):
         """
             Prints the actions done by the agents in the given time inteval.
-            - initial_time is 0 by defualt
+            - initial_time is 0 by default
             - end_time is the ending time of the simulation by default
         """
         if end_time == None:

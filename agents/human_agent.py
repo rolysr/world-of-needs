@@ -125,7 +125,7 @@ class HumanAgent(Agent):
         # needs dissatisfaction formula
         needs_dissatisfaction = 0
         for tuple in self.needs:
-            needs_dissatisfaction += normalized_income_rate*tuple[0]*tuple[2]
+            needs_dissatisfaction += normalized_income_rate*tuple[0]*(tuple[2]**2)
         # time dissatisfaction formula
         time_dissatisfaction = time*normalized_income_rate * \
             TIME_DISSATISFACTION_WEIGHTING_FACTOR
