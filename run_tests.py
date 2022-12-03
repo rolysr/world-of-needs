@@ -41,7 +41,22 @@ if __name__ == "__main__":
     exp = Experiment(number_human_agents, number_destination_agents,
                     number_needs, simulation_duration, gini_coef, mean_income, human_needs_density, offers_average_price, 
                     store_offers_density, stores_total_budget, store_distribution)
-    exp.run_simulated_annealing(None,optimization_target.STORE_DISTRIBUTION, [0.5, 0.5], None, 40)
+    
+    def pf_offers_price_factor(dsat, factor):
+        if dsat < 1e6:
+            return exp(1 / factor)
+        return dsat - 1e6
+
+    def pf_total_budget_factor(dsat, factor):
+        if dsat < 1e6:
+            return exp(factor)
+        return dsat - 1e6
+
+    # exp.run_simulated_annealing(None,optimization_target.STORE_DISTRIBUTION, [0.5, 0.5], None, 40)
+    # exp.run_simulated_annealing(None,optimization_target.STORE_OFFERS_DENSITY, [1, 1, 1, 1, 1, 1], None, 40)
+    # exp.run_simulated_annealing(None,optimization_target.OFFERS_PRICE_FACTOR, (1,pf_offers_price_factor), None, 40)
+    # exp.run_simulated_annealing(None,optimization_target.TOTAL_BUDGET_FACTOR, (1,pf_total_budget_factor), None, 40)
+
     # for human_agent in env.human_agents:
     #     print(human_agent)
     #     human_agent.narrate()
