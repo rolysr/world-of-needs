@@ -161,5 +161,9 @@ class HumanAgent(Agent):
                 self.needs.append(new_need)
 
         self.visited_destinations = []
-        self.balance += generate_human_balance(self.income)
+        if accumulate_flag:
+            self.balance += generate_human_balance(self.income)
+        else:
+            self.balance = generate_human_balance(self.income)
         self.base_balance = self.balance
+        self.log_record = list()

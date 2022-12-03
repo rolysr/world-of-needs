@@ -74,3 +74,4 @@ class DestinationAgent(Agent):
         self.next_available_time = 0
         self.number_current_clients = 0
         self.queue = Queue()
+        self.log_record = list()

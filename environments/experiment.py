@@ -1,7 +1,7 @@
 from numpy.random import *
 from enum import *
 from agents.human_agent import GLOBAL_HUMAN_AVERAGE_INCOME
-from environment import *
+from environments.environment import *
 
 # Up to add to settings file
 EPS = 1e-9
@@ -47,15 +47,15 @@ class Experiment:
         self.base_stores_total_budget = stores_total_budget
         self.base_store_distribution = store_distribution
 
-    def default_dsat_evaluator(dsat_values):
+    def default_dsat_evaluator(self, dsat_values):
         mean = 0
         for x in dsat_values:
             mean += x
         mean /= len(dsat_values)
         return mean
 
-    def default_temperature_function(iteration_index):
-        return 1.0/iteration_index
+    def default_temperature_function(self, iteration_index):
+        return 1.0/(iteration_index+1)
 
     def default_settings(self, dsat_evaluator, temperature_function):
         """
@@ -157,8 +157,11 @@ class Experiment:
                 store_offers_density = new_store_offers_density
                 eval -= delta_eval
                 continue
-
-            threshold = exp(-delta_eval / temperature)
+            
+            if delta_eval / temperature < -40: # Means the probability is 0
+                continue
+            
+            threshold = exp(delta_eval / temperature)
             if uniform(0, 1) < threshold:
                 store_offers_density = new_store_offers_density
                 eval -= delta_eval
@@ -198,8 +201,11 @@ class Experiment:
                 store_offers_density = new_store_distribution
                 eval -= delta_eval
                 continue
+            
+            if delta_eval / temperature < -40: # Means the probability is 0
+                continue
 
-            threshold = exp(-delta_eval / temperature)
+            threshold = exp(delta_eval / temperature)
             if uniform(0, 1) < threshold:
                 store_offers_density = new_store_distribution
                 eval -= delta_eval
@@ -243,8 +249,11 @@ class Experiment:
                 price_factor = new_price_factor
                 eval -= delta_eval
                 continue
+            
+            if delta_eval / temperature < -40: # Means the probability is 0
+                continue
 
-            threshold = exp(-delta_eval / temperature)
+            threshold = exp(delta_eval / temperature)
             if uniform(0, 1) < threshold:
                 price_factor = new_price_factor
                 eval -= delta_eval
@@ -285,8 +294,11 @@ class Experiment:
                 budget_factor = new_budget_factor
                 eval -= delta_eval
                 continue
+            
+            if delta_eval / temperature < -40: # Means the probability is 0
+                continue
 
-            threshold = exp(-delta_eval / temperature)
+            threshold = exp(delta_eval / temperature)
             if uniform(0, 1) < threshold:
                 budget_factor = new_budget_factor
                 eval -= delta_eval

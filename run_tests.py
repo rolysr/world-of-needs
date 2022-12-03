@@ -5,6 +5,7 @@ from testing.income_generator_test import *
 from utils.generator.human_generators.human_generator import generate_human_agents
 from utils.generator.destination_generators.destination_generator import generate_destination_agents
 from environments.environment import *
+from environments.experiment import *
 
 if __name__ == "__main__":
     # run_human_agents_generator_test(6)
@@ -17,20 +18,34 @@ if __name__ == "__main__":
     number_destination_agents = 2
     number_needs = 6
     simulation_duration = 100000
-    gini_coef, mean_income = 0.5, 1000
+    gini_coef, mean_income = 0.5, 300
     human_needs_density = [0.4, 0.7, 0.1, 1.5, 2, 1]
     offers_average_price = [100, 100, 100, 100, 100, 100]
     store_offers_density = [1, 1, 1, 1, 1, 1]
     stores_total_budget = 10000
-    env = Environment(number_human_agents, number_destination_agents,
+    store_distribution = [0.5, 0.5]
+    # env = Environment(number_human_agents, number_destination_agents,
+    #                 number_needs, simulation_duration, gini_coef, mean_income, human_needs_density, offers_average_price, 
+    #                 store_offers_density, stores_total_budget, store_distribution)
+    
+    # def fun(dsat_values):
+    #     mean = 0
+    #     for x in dsat_values:
+    #         mean += x
+    #     mean /= len(dsat_values)
+    #     return mean
+
+    # print(env.run_x_times(fun, 30, 10))
+
+
+    exp = Experiment(number_human_agents, number_destination_agents,
                     number_needs, simulation_duration, gini_coef, mean_income, human_needs_density, offers_average_price, 
-                    store_offers_density, stores_total_budget)
-    env.run(5)
-    env.narrate()
-    for human_agent in env.human_agents:
-        print(human_agent)
-        human_agent.narrate()
-    for destination_agent in env.destination_agents:
-        print(destination_agent)
-        destination_agent.narrate()
+                    store_offers_density, stores_total_budget, store_distribution)
+    exp.run_simulated_annealing(None,optimization_target.STORE_DISTRIBUTION, [0.5, 0.5], None, 40)
+    # for human_agent in env.human_agents:
+    #     print(human_agent)
+    #     human_agent.narrate()
+    # for destination_agent in env.destination_agents:
+    #     print(destination_agent)
+    #     destination_agent.narrate()
     # run_income_generator_test()

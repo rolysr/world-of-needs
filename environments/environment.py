@@ -40,6 +40,10 @@ class Environment:
         self.graph, self.human_agents_locations, self.destination_agents_locations = generate_graph(
             self.human_agents, self.destination_agents)
 
+        self.initial_human_agents_location = dict()
+        for x in self.human_agents_locations.keys():
+            self.initial_human_agents_location[x] = self.human_agents_locations[x]
+
         # The main data structure for updating the environment. This field is a priority queue with the actions that have to be executed on the environment
         # Each element has form (time_to_be_executed, human_agent_to_execute_action, other_data)
         self.schedule = generate_environment_schedule(
@@ -233,10 +237,13 @@ class Environment:
             for destination_agent in self.destination_agents:
                 destination_agent.reset(accumulate_flag)
 
+        self.human_agents_locations = self.initial_human_agents_location
         self.schedule = generate_environment_schedule(
             self.human_agents, self.human_agents_locations, self.destination_agents_locations, self.graph, self.number_of_needs)
+
         self.total_time_elapsed = 0
         self.dsat_list = dict()
+        self.log_record = list()
 
     def run_x_times(self, dsat_evaluator, x=30, time_step=10):
         """
@@ -247,15 +254,16 @@ class Environment:
         for i in range(self.number_destination_agents):
             self.destination_agents[i].store_offers_density = self.store_offers_density
             self.destination_agents[i].offers_average_price = self.offers_average_price
-            self.destination_agents[i].budget = self.stores_total_budget * self.store_distribution[i]
-        self.reset(False)
-        
-        dsat_evaluation_mean = 0
+            self.destination_agents[i].budget = self.stores_total_budget * \
+                self.store_distribution[i]
+        self.reset(False, True, True)
+
+        dsat_evaluation_sum = 0
         for i in range(x):
             self.run(time_step)
-            dsat_evaluation_mean += dsat_evaluator(self.dsat_list.values())
-            self.reset(False)
-        return dsat_evaluation_mean/x
+            dsat_evaluation_sum += dsat_evaluator(self.dsat_list.values())
+            self.reset(False, True, True)
+        return dsat_evaluation_sum / x
 
     def narrate(self, initial_time=0, end_time=None):
         """
