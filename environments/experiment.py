@@ -35,6 +35,9 @@ class Experiment:
                  simulation_duration, gini_coef, mean_income, offers_average_price=None, human_needs_density=None,
                  store_offers_density=None, stores_total_budget=None, store_distribution=None):
 
+        self.env_based = False
+        self.base_env = None
+
         self.number_human_agents = number_human_agents
         self.number_destination_agents = number_destination_agents
         self.number_of_needs = number_of_needs
@@ -46,6 +49,22 @@ class Experiment:
         self.base_store_offers_density = store_offers_density
         self.base_stores_total_budget = stores_total_budget
         self.base_store_distribution = store_distribution
+
+    def __init__(self, env: Environment):
+        self.env_based = False
+        self.base_env = env
+
+        self.number_human_agents = env.number_human_agents
+        self.number_destination_agents = env.number_destination_agents
+        self.number_of_needs = env.number_of_needs
+        self.simulation_duration = env.simulation_duration
+        self.gini_coef = env.gini_coef
+        self.mean_income = env.mean_income
+        self.base_offers_average_price = env.offers_average_price
+        self.base_human_needs_density = env.human_needs_density
+        self.base_store_offers_density = env.store_offers_density
+        self.base_stores_total_budget = env.stores_total_budget
+        self.base_store_distribution = env.store_distribution
 
     def default_dsat_evaluator(self, dsat_values):
         mean = 0
@@ -136,6 +155,9 @@ class Experiment:
         env = Environment(self.number_human_agents, self.number_destination_agents, self.number_of_needs,
                           self.simulation_duration, self.gini_coef, self.mean_income, human_needs_density,
                           offers_average_price, store_offers_density, stores_total_budget, store_distribution)
+        if self.env_based:
+            env = self.base_env
+
         eval = env.run_x_times(dsat_evaluator, 30, 10)
 
         print("The initial state is:\n store_offers_density: {}\n with evaluation: {}".format(
@@ -157,10 +179,10 @@ class Experiment:
                 store_offers_density = new_store_offers_density
                 eval -= delta_eval
                 continue
-            
-            if delta_eval / temperature < -40: # Means the probability is 0
+
+            if delta_eval / temperature < -40:  # Means the probability is 0
                 continue
-            
+
             threshold = exp(delta_eval / temperature)
             if uniform(0, 1) < threshold:
                 store_offers_density = new_store_offers_density
@@ -180,6 +202,9 @@ class Experiment:
         env = Environment(self.number_human_agents, self.number_destination_agents, self.number_of_needs,
                           self.simulation_duration, self.gini_coef, self.mean_income, human_needs_density,
                           offers_average_price, store_offers_density, stores_total_budget, store_distribution)
+        if self.env_based:
+            env = self.base_env
+
         eval = env.run_x_times(dsat_evaluator, 30, 10)
 
         print("The initial state is:\n store_distribution: {}\n with evaluation: {}".format(
@@ -201,8 +226,8 @@ class Experiment:
                 store_offers_density = new_store_distribution
                 eval -= delta_eval
                 continue
-            
-            if delta_eval / temperature < -40: # Means the probability is 0
+
+            if delta_eval / temperature < -40:  # Means the probability is 0
                 continue
 
             threshold = exp(delta_eval / temperature)
@@ -226,6 +251,9 @@ class Experiment:
         env = Environment(self.number_human_agents, self.number_destination_agents, self.number_of_needs,
                           self.simulation_duration, self.gini_coef, self.mean_income, human_needs_density,
                           offers_average_price, store_offers_density, stores_total_budget, store_distribution)
+        if self.env_based:
+            env = self.base_env
+            
         eval = penalty_function(env.run_x_times(
             dsat_evaluator, 30, 10), price_factor)
 
@@ -249,8 +277,8 @@ class Experiment:
                 price_factor = new_price_factor
                 eval -= delta_eval
                 continue
-            
-            if delta_eval / temperature < -40: # Means the probability is 0
+
+            if delta_eval / temperature < -40:  # Means the probability is 0
                 continue
 
             threshold = exp(delta_eval / temperature)
@@ -271,7 +299,10 @@ class Experiment:
         # The environment this optimization is going to use.
         env = Environment(self.number_human_agents, self.number_destination_agents, self.number_of_needs,
                           self.simulation_duration, self.gini_coef, self.mean_income, human_needs_density,
-                          offers_average_price, store_offers_density, base_stores_total_budget * budget_factor, store_distribution)
+                          offers_average_price, store_offers_density, stores_total_budget, store_distribution)
+        if self.env_based:
+            env = self.base_env
+            
         eval = penalty_function(env.run_x_times(
             dsat_evaluator, 30, 10), budget_factor)
 
@@ -294,8 +325,8 @@ class Experiment:
                 budget_factor = new_budget_factor
                 eval -= delta_eval
                 continue
-            
-            if delta_eval / temperature < -40: # Means the probability is 0
+
+            if delta_eval / temperature < -40:  # Means the probability is 0
                 continue
 
             threshold = exp(delta_eval / temperature)

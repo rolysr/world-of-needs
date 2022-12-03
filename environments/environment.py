@@ -24,6 +24,9 @@ class Environment:
         self.human_agents = generate_human_agents(
             number_human_agents, number_of_needs, gini_coef, mean_income, human_needs_density)
 
+        self.gini_coef = gini_coef
+        self.mean_income = mean_income
+        self.human_needs_density = human_needs_density
         self.store_offers_density = store_offers_density
         self.offers_average_price = offers_average_price
         self.stores_total_budget = stores_total_budget
