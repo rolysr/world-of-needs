@@ -6,6 +6,7 @@ from environment import *
 # Up to add to settings file
 EPS = 1e-9
 
+
 class optimization_target(Enum):
     STORE_OFFERS_DENSITY = 1
     """
@@ -107,7 +108,7 @@ class Experiment:
         # Switching optimization_target initial settings
         (offers_average_price, human_needs_density, store_offers_density, stores_total_budget, store_distribution, dsat_evaluator,
          temperature_function, price_factor, budget_factor) = self.default_settings(dsat_evaluator, temperature_function)
-        
+
         if initial_store_offers_density != None:
             store_offers_density = initial_store_offers_density
 
@@ -115,6 +116,9 @@ class Experiment:
                              self.simulation_duration, self.gini_coef, self.mean_income, human_needs_density,
                              offers_average_price, store_offers_density, stores_total_budget, store_distribution)
         eval = actual.run_x_times(dsat_evaluator, 30, 10)
+
+        print("The initial state is:\n store_offers_density: {}\n with evaluation: {}".format(
+            store_offers_density, eval))
 
         for it_index in range(iterations):
             temperature = temperature_function(it_index)
@@ -124,9 +128,20 @@ class Experiment:
             new_store_offers_density = self.next_list(
                 store_offers_density, it_index, self.number_of_needs)
 
-            actual.sto
-            
-            delta_eval = 
+            actual.store_offers_density = new_store_offers_density
+
+            delta_eval = eval - actual.run_x_times(dsat_evaluator, 30, 10)
+
+            if delta_eval > EPS:  # improve!
+                store_offers_density = new_store_offers_density
+                continue
+
+            threshold = exp(-delta_eval / temperature)
+            if uniform(0, 1) < threshold:
+                store_offers_density = new_store_offers_density
+
+        print("The final state is:\n store_offers_density: {}\n with evaluation: {}".format(
+            store_offers_density, eval))
 
     def run_simulated_annealing(self, dsat_evaluator, optimization_target: optimization_target,
                                 optimization_params, temperature_function, iterations: int = 100):

@@ -23,6 +23,11 @@ class Environment:
         # Generate random agents
         self.human_agents = generate_human_agents(
             number_human_agents, number_of_needs, gini_coef, mean_income, human_needs_density)
+
+        self.store_offers_density = store_offers_density
+        self.offers_average_price = offers_average_price
+        self.stores_total_budget = stores_total_budget
+        self.store_distribution = store_distribution
         self.destination_agents = generate_destination_agents(
             number_destination_agents, number_of_needs, store_offers_density,
             offers_average_price, stores_total_budget, store_distribution)
@@ -216,17 +221,17 @@ class Environment:
             self.dsat_list[human_agent] = human_agent.dissatisfaction(
                 self.total_time_elapsed)
 
-    def reset(self, reset_human_agents_flag=True, reset_destination_agents_flag=True):
+    def reset(self, accumulate_flag=True, reset_human_agents_flag=True, reset_destination_agents_flag=True):
         """
             Reset function for the environment. This function should be called just before
             running again the environment.
         """
         if reset_human_agents_flag:
             for human_agent in self.human_agents:
-                human_agent.reset()
+                human_agent.reset(accumulate_flag)
         if reset_destination_agents_flag:
             for destination_agent in self.destination_agents:
-                destination_agent.reset()
+                destination_agent.reset(accumulate_flag)
 
         self.schedule = generate_environment_schedule(
             self.human_agents, self.human_agents_locations, self.destination_agents_locations, self.graph, self.number_of_needs)
@@ -238,11 +243,18 @@ class Environment:
             Runs and resets the environment x times. 
             Returns the average of evaluating the dissatisfaction list at the end of these runs.
         """
+        # Update destination agents params
+        for i in range(self.number_destination_agents):
+            self.destination_agents[i].store_offers_density = self.store_offers_density
+            self.destination_agents[i].offers_average_price = self.offers_average_price
+            self.destination_agents[i].budget = self.stores_total_budget * self.store_distribution[i]
+        self.reset(False)
+        
         dsat_evaluation_mean = 0
         for i in range(x):
             self.run(time_step)
             dsat_evaluation_mean += dsat_evaluator(self.dsat_list.values())
-            self.reset()
+            self.reset(False)
         return dsat_evaluation_mean/x
 
     def narrate(self, initial_time=0, end_time=None):

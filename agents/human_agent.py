@@ -25,8 +25,10 @@ class HumanAgent(Agent):
     def __init__(self, number_of_needs, gini_coef, mean_income, human_needs_density):  # Class constructor
         super().__init__()
         # Parameters for the creation of this instance of human agent
-        self.params = (number_of_needs, gini_coef,
-                       mean_income, human_needs_density)
+        self.number_of_needs = number_of_needs
+        self.gini_coef = gini_coef
+        self.mean_income = mean_income
+        self.human_needs_density = human_needs_density
         # This has to be generater using random variables (need_priority, need_id, amount_to_satisfy)
         self.needs = generate_human_needs(number_of_needs, human_needs_density)
         # speed on m/s, this mus be generated with a random variable
@@ -81,15 +83,15 @@ class HumanAgent(Agent):
         best_destination_agent = None  # best destination agent
         destination_agents_locations = {destination_agent: destination_agents_locations[destination_agent] for destination_agent in destination_agents_locations.keys(
         ) if destination_agent not in self.visited_destinations}  # set possible destination to go if not visited
-        
+
         # get real distance for all destination agents
         destinations_real_distances = dijkstra(human_location, graph)
         minimum_real_distance = inf  # minimum distances
-        
+
         # get heuristic function
         heuristic_function = multigoal_astar_heuristic(
             destination_agents_locations, graph, self, destination_agents_locations.keys(), number_of_needs)  # get astar heuristic function
-        
+
         # execute multigoal astar
         best_destination_node = multigoal_astar(
             human_location, destination_agents_locations.values(), graph, heuristic_function)
@@ -99,7 +101,7 @@ class HumanAgent(Agent):
 
         # calculate time for the travel
         travel_time = minimum_real_distance / self.speed
-        
+
         # get best destination agent assuming there is no two destination agents at the same place
         for destination in destination_agents_locations.keys():
             if destination_agents_locations[destination] == best_destination_node:
@@ -125,7 +127,8 @@ class HumanAgent(Agent):
         # needs dissatisfaction formula
         needs_dissatisfaction = 0
         for tuple in self.needs:
-            needs_dissatisfaction += normalized_income_rate*tuple[0]*(tuple[2]**2)
+            needs_dissatisfaction += normalized_income_rate * \
+                tuple[0]*(tuple[2]**2)
         # time dissatisfaction formula
         time_dissatisfaction = time*normalized_income_rate * \
             TIME_DISSATISFACTION_WEIGHTING_FACTOR
@@ -134,19 +137,24 @@ class HumanAgent(Agent):
             1 + 1.0/normalized_income_rate)*MONEY_DISSATISFACTION_WEIGHTING_FACTOR
         return needs_dissatisfaction+time_dissatisfaction+money_dissatisfaction
 
-    def reset(self):
+    def reset(self, accumulate_flag=True):
         """
             Reset function for the human agent. This function should be called just 
             before running again the environment. 
         """
-        new_needs = generate_human_needs(self.params[0], self.params[3])
+        new_needs = generate_human_needs(
+            self.number_of_needs, self.human_needs_density)
         for new_need in new_needs:
             ok = False
             for i in range(len(self.needs)):
                 actual_need = self.needs[i]
                 if new_need[1] == actual_need[1]:
-                    updated_amount = new_need[2]+actual_need[2]
-                    self.needs[i] = (actual_need[0], actual_need[1], updated_amount)
+                    if accumulate_flag:
+                        updated_amount = new_need[2] + actual_need[2]
+                    else:
+                        updated_amount = new_need[2]
+                    self.needs[i] = (
+                        actual_need[0], actual_need[1], updated_amount)
                     ok = True
                     break
             if not ok:
