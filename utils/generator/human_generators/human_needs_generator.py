@@ -15,7 +15,7 @@ def generate_human_needs(number_of_needs, human_needs_density):
         if X >= threshold:
             continue
         priority = uniform(0, 100)
-        amount = exponential(2) * (human_needs_density[i]+1)
+        amount = exponential(human_needs_density[i]+1)
         # a goal need is a tuple (priority, need_id, needed_amount)
         goal_needs.append((priority, i, amount))
 

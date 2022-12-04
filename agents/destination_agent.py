@@ -61,16 +61,17 @@ class DestinationAgent(Agent):
             for i in range(len(self.offers)):
                 actual_offer = self.offers[i]
                 if new_offer[0] == actual_offer[0]:
+                    updated_amount = new_offer[1]
                     if accumulate_flag:
-                        updated_amount = new_offer[2] + actual_offer[2]
-                    else:
-                        updated_amount = new_offer[2]
+                        updated_amount += actual_offer[1]
                     self.offers[i] = (
                         actual_offer[0], updated_amount, actual_offer[2])
                     ok = True
                     break
             if not ok:
                 self.offers.append(new_offer)
+                
+        self.offers.sort()
         self.next_available_time = 0
         self.number_current_clients = 0
         self.queue = Queue()
