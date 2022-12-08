@@ -27,10 +27,11 @@ def multigoal_astar(initial_node: Node, destination_nodes : Node, graph: Graph, 
         distance_to_node[node] = 0 if node == initial_node else inf
         visited_node[node] = False  # initially all nodes are not visited
 
-    queue.put((0, initial_node))  # add node to priority queue
+    queue.put((0 + heuristic_function[initial_node], initial_node))  # add node to priority queue
     size = 1
     while size > 0:
-        distance, node = queue.get()  # get node with minimum distance
+        node_distance, node = queue.get()  # get node with minimum distance
+        real_distance_to_node = node_distance - heuristic_function[node]
         size -= 1
 
         if node in destination_nodes: # if we get to the destination node, then astar stops
@@ -49,11 +50,11 @@ def multigoal_astar(initial_node: Node, destination_nodes : Node, graph: Graph, 
                 continue
 
             # new distance for adjacent node
-            new_distance = distance + distance_to_node[node] + heuristic_function[node]
+            new_distance = distance + real_distance_to_node
             # if distance is improved, then update it and also, update parent node
             if new_distance < distance_to_node[adjacent_node]:
                 distance_to_node[adjacent_node] = new_distance
-                queue.put((distance_to_node[adjacent_node], adjacent_node))
+                queue.put((distance_to_node[adjacent_node] + heuristic_function[node], adjacent_node))
                 size += 1
                 
     # return best destination node
