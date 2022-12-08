@@ -1,5 +1,5 @@
 from copy import deepcopy
-from random import randrange
+from random import randrange, uniform
 
 
 def generate_random_solution(current_offers, current_needs, current_balance):
@@ -22,7 +22,7 @@ def generate_random_solution(current_offers, current_needs, current_balance):
             if need[1] == offer[0]:
                 need_amount, offer_amount, price = need[2], offer[1], offer[2]
                 # product amount to be adquired. Random possible purchase
-                amount_to_buy = randrange(0, min(
+                amount_to_buy = uniform(0, min(
                     need_amount, offer_amount, balance//price))
 
                 if amount_to_buy > 0:  # if human is going to get some need then update his internal state
@@ -31,10 +31,13 @@ def generate_random_solution(current_offers, current_needs, current_balance):
                     balance -= amount_to_buy*price  # update human balance
                     # add a request with format (<offer_id>, amount_to_buy)
                     offers_requests.append((offer[0], amount_to_buy))
-                    offers[i][1] -= amount_to_buy #update offers
+                    print(i, len(offers))
+                    print(offers[i])
+                    offers[i] = (offers[i][0], offers[i][1]-amount_to_buy, offers[i][2]) #update offers
 
-    # update needs, just keep track for unsatisfied ones
+    # update needs and offers, just keep track for unsatisfied ones
     needs = [need for need in needs if need[2] > 0]
+    offers = [offer for offer in offers if offer[1] > 0]
 
     return offers_requests, offers, needs, balance
 
@@ -60,12 +63,14 @@ def generate_random_neighbor(current_solution, current_offers, current_needs, cu
             if need[1] == offer[0]:
                 offers_needs_match_indexes.append((i,j))
 
-    rand_index = randrange(0, len(offers_needs_match_indexes)) # select a random index in order to purchase the corresponding need
+    if len(offers_needs_match_indexes) == 0 or len(current_needs) == 0 or len(current_offers) == 0: # there is no valid neighbor
+        return None
 
+    rand_index = randrange(0, len(offers_needs_match_indexes)) # select a random index in order to purchase the corresponding need
     offer, need = offers[offers_needs_match_indexes[rand_index][0]], needs[offers_needs_match_indexes[rand_index][1]] # select offer and need
 
     need_amount, offer_amount, price = need[2], offer[1], offer[2]
-    # product amount to be adquired. Random possible purchase
+    # product amount to be adquired.
     amount_to_buy = min(
         need_amount, offer_amount, balance//price)
 
@@ -76,11 +81,12 @@ def generate_random_neighbor(current_solution, current_offers, current_needs, cu
         # update a request with format (<offer_id>, amount_to_buy)
         for i in range(len(offers_requests)):
             if offer[0] == offers_requests[i][0]:
-                offers_requests[i][1] += amount_to_buy
+                offers_requests[i] = (offers_requests[i][0], offers_requests[i][1] + amount_to_buy)
             
-        offers[offers_needs_match_indexes[rand_index][0]][1] -= amount_to_buy #update offers
+        offers[offers_needs_match_indexes[rand_index][0]] = (offers[offers_needs_match_indexes[rand_index][0]][0], offers[offers_needs_match_indexes[rand_index][0]][1]- amount_to_buy, offers[offers_needs_match_indexes[rand_index][0]][2])  #update offers
 
     # update needs, just keep track for unsatisfied ones
     needs = [need for need in needs if need[2] > 0]
+    offers = [offer for offer in offers if offer[1] > 0]
 
     return offers_requests, offers, needs, balance

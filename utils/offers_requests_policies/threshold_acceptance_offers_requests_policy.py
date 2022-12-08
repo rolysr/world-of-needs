@@ -23,6 +23,10 @@ def threshold_acceptance_offers_requests_policy(offers, income, needs, base_bala
 
         for i in range(number_of_iterations_per_q): # repeat at a fixed q (threshold)
             neighbor = generate_random_neighbor(best_solution, current_offers, current_needs, current_balance) # generate a random valid neighbor
+            
+            if neighbor is None: #invalid neighbor, there is no possible neighbor
+                break
+            
             offers_requests, updated_offers, updated_needs, updated_balance = neighbor # get new variables modified after purchase
             neighbor_eval = goal_function(income, updated_needs, base_balance, updated_balance) # how good is the state after purchase
             delta_E = neighbor_eval - best_solution_eval # get the neighbor improvement

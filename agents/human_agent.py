@@ -8,6 +8,8 @@ from utils.graph.algorithms.multigoal_astar import multigoal_astar
 from utils.graph.algorithms.multigoal_astar_heuristic import multigoal_astar_heuristic
 from utils.graph.algorithms.dijkstra import dijkstra
 from utils.offers_requests_policies.brute_force_offers_requests_policy import brute_force_offers_requests_policy
+from utils.offers_requests_policies.genetic_offers_requests_policy import genetic_offers_requests_policy
+from utils.offers_requests_policies.threshold_acceptance_offers_requests_policy import threshold_acceptance_offers_requests_policy
 
 # up to add to settings file (value taken from https://news.gallup.com/poll/166211/worldwide-median-household-income-000.aspx)
 # 2920 is the annual value
@@ -44,7 +46,7 @@ class HumanAgent(Agent):
             to satisfy his needs.
             The returned request will be used by destination agents
         """
-        offers_requests, self.needs, self.balance = brute_force_offers_requests_policy(offers, self.needs, self.balance)
+        offers_requests, self.needs, self.balance = threshold_acceptance_offers_requests_policy(offers, self.income, self.needs, self.base_balance, self.balance, self.purchase_dissatisfaction)
 
         return offers_requests
 

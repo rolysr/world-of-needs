@@ -25,6 +25,8 @@ def genetic_offers_requests_policy(offers, income, needs, base_balance, balance,
 
             if uniform(0, 1) < 1/3:
                 child = mutate(child)
+                if child is None: #invalid mutation then continue
+                    continue
 
             new_population.append(child)
         
@@ -54,7 +56,7 @@ def generate_initial_population(offers, income, needs, base_balance, balance, go
 
     return population, mean_fitness
 
-def random_selection(population, goal_function, threshold):
+def random_selection(population, threshold):
     """
         Selects a random individual randomly based on a given threshold
     """
