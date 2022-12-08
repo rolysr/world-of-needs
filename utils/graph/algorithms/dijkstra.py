@@ -31,7 +31,7 @@ def dijkstra(initial_node: Node, graph: Graph):
     queue.put((0, initial_node))  # add node to priority queue
     size = 1
     while size > 0:
-        distance, node = queue.get()  # get node with minimum distance
+        node_distance, node = queue.get()  # get node with minimum distance
         size -= 1
         if visited_node[node]:
             continue
@@ -45,7 +45,7 @@ def dijkstra(initial_node: Node, graph: Graph):
                 continue
 
             # new distance for adjacent node
-            new_distance = distance + distance_to_node[node]
+            new_distance = distance + node_distance
             # if distance is improved, then update it and also, update parent node
             if new_distance < distance_to_node[adjacent_node]:
                 distance_to_node[adjacent_node] = new_distance
