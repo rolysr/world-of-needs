@@ -1,6 +1,7 @@
 from testing.human_agents_generator_test import *
 from testing.destination_agents_generator_test import *
 from testing.graph_generator_test import *
+from testing.income_generator_test import *
 from utils.generator.human_generators.human_generator import generate_human_agents
 from utils.generator.destination_generators.destination_generator import generate_destination_agents
 from environments.environment import *
@@ -16,6 +17,20 @@ if __name__ == "__main__":
     number_destination_agents = 2
     number_needs = 6
     simulation_duration = 100000
+    gini_coef, mean_income = 0.5, 1000
+    human_needs_density = [0.4, 0.7, 0.1, 1.5, 2, 1]
+    offers_average_price = [100, 100, 100, 100, 100, 100]
+    store_offers_density = [1, 1, 1, 1, 1, 1]
+    stores_total_budget = 10000
     env = Environment(number_human_agents, number_destination_agents,
-                      number_needs, simulation_duration)
+                    number_needs, simulation_duration, gini_coef, mean_income, human_needs_density, offers_average_price, 
+                    store_offers_density, stores_total_budget)
     env.run(5)
+    env.narrate()
+    for human_agent in env.human_agents:
+        print(human_agent)
+        human_agent.narrate()
+    for destination_agent in env.destination_agents:
+        print(destination_agent)
+        destination_agent.narrate()
+    # run_income_generator_test()
