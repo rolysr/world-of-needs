@@ -1,5 +1,4 @@
 from math import inf
-from turtle import distance
 from agents.agent import Agent
 from utils.generator.human_generators.human_balance_generator import generate_human_balance
 from utils.generator.human_generators.human_needs_generator import generate_human_needs
@@ -8,6 +7,9 @@ from utils.generator.human_generators.human_income_generator import generate_hum
 from utils.graph.algorithms.multigoal_astar import multigoal_astar
 from utils.graph.algorithms.multigoal_astar_heuristic import multigoal_astar_heuristic
 from utils.graph.algorithms.dijkstra import dijkstra
+from utils.offers_requests_policies.brute_force_offers_requests_policy import brute_force_offers_requests_policy
+from utils.offers_requests_policies.genetic_offers_requests_policy import genetic_offers_requests_policy
+from utils.offers_requests_policies.threshold_acceptance_offers_requests_policy import threshold_acceptance_offers_requests_policy
 
 # up to add to settings file (value taken from https://news.gallup.com/poll/166211/worldwide-median-household-income-000.aspx)
 # 2920 is the annual value
@@ -36,6 +38,7 @@ class HumanAgent(Agent):
         self.balance = generate_human_balance(self.income)
         # This has to be generated using random variables
         self.base_balance = self.balance
+        self.social_class = "high" if self.income >= 2*mean_income else ('low' if self.income < mean_income else 'medium')
 
     def offers_requests(self, offers):
         """
@@ -46,29 +49,15 @@ class HumanAgent(Agent):
         """
         offers_requests = []
 
-        for i in range(len(offers)):
-            offer = offers[i]  # offer at position i
+        if self.social_class == "low":
+            offers_requests, self.needs, self.balance = threshold_acceptance_offers_requests_policy(offers, self.income, self.needs, self.base_balance, self.balance, self.purchase_dissatisfaction)
 
-            for j in range(len(self.needs)):
-                need = self.needs[j]  # need at position j
+        elif self.social_class == "medium":
+            offers_requests, self.needs, self.balance = genetic_offers_requests_policy(offers, self.income, self.needs, self.base_balance, self.balance, self.purchase_dissatisfaction)
 
-                # if offer matches the need and then try to satisfy it as possible
-                if need[1] == offer[0]:
-                    need_amount, offer_amount, price = need[2], offer[1], offer[2]
-                    # product amount to be adquired
-                    amount_to_buy = min(
-                        need_amount, offer_amount, self.balance//price)
-
-                    if amount_to_buy > 0:  # if human is going to get some need then update his internal state
-                        self.needs[j] = (need[0], need[1],
-                                         need[2]-amount_to_buy)
-                        self.balance -= amount_to_buy*price  # update human balance
-                        # add a request with format (<offer_id>, amount_to_buy)
-                        offers_requests.append((offer[0], amount_to_buy))
-
-        # update needs, just keep track for unsatisfied ones
-        self.needs = [need for need in self.needs if need[2] > 0]
-
+        else:
+            offers_requests, self.needs, self.balance = brute_force_offers_requests_policy(offers, self.needs, self.balance)
+            
         return offers_requests
 
     def next_destination_to_move(self, human_location, destination_agents_locations, graph, number_of_needs):
@@ -122,17 +111,34 @@ class HumanAgent(Agent):
         # Let's use time, actual needs and balance to find a satisfaction function
         # Also uses the income rate of the human agent
         normalized_income_rate = self.income / GLOBAL_HUMAN_AVERAGE_INCOME
-        # needs dissatisfaction formula
-        needs_dissatisfaction = 0
-        for tuple in self.needs:
-            needs_dissatisfaction += normalized_income_rate*tuple[0]*tuple[2]
+
         # time dissatisfaction formula
         time_dissatisfaction = time*normalized_income_rate * \
             TIME_DISSATISFACTION_WEIGHTING_FACTOR
+        
+        purchase_dissatisfaction = self.purchase_dissatisfaction(self.income, self.needs, self.base_balance, self.balance)
+
+        return time_dissatisfaction + purchase_dissatisfaction
+
+    def purchase_dissatisfaction(self, income, needs, base_balance, balance):
+        """
+            Purchase dissatisfaction for getting the
+            quality after a human agent purchase process
+        """
+        # Let's use time, actual needs and balance to find a satisfaction function
+        # Also uses the income rate of the human agent
+        normalized_income_rate = income / GLOBAL_HUMAN_AVERAGE_INCOME
+
+        # needs dissatisfaction formula
+        needs_dissatisfaction = 0
+        for tuple in needs:
+            needs_dissatisfaction += normalized_income_rate*tuple[0]*(tuple[2]**2)
+
         # money dissatisfaction formula
-        money_dissatisfaction = (self.base_balance-self.balance)*(
+        money_dissatisfaction = (base_balance-balance)*(
             1 + 1.0/normalized_income_rate)*MONEY_DISSATISFACTION_WEIGHTING_FACTOR
-        return needs_dissatisfaction+time_dissatisfaction+money_dissatisfaction
+
+        return needs_dissatisfaction + money_dissatisfaction
 
     def reset(self):
         """
