@@ -11,6 +11,7 @@ class Agent:
         self.id = uuid1()  # Unique identifier
         # Log record in form of tuples (time, narration)
         self.log_record = list()
+        self.name = str()
 
     def __eq__(self, other) -> bool:
         return self.id == other.id

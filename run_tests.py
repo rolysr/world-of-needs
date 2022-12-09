@@ -68,8 +68,8 @@ if __name__ == "__main__":
     # # print(env.run_x_times(fun, 30, 10))
 
     # env.print_agents()
-    # env.run()
-    # env.narrate()
+    env.run()
+    env.narrate()
 
     # print(env.run_x_times(fun, 100, 10))
 
@@ -87,7 +87,7 @@ if __name__ == "__main__":
 
     # env.store_offers_density = store_offers_density
 
-    exp = Experiment(env)
+    # exp = Experiment(env)
 
     # def pf_offers_price_factor(dsat, price_factor):
     #     if dsat < 1e6:
@@ -100,7 +100,7 @@ if __name__ == "__main__":
     #     return dsat - 1e6
 
     # exp.run_hill_climbing(None,optimization_target.STORE_DISTRIBUTION, [0.5, 0.5], 40, 40)
-    exp.run_hill_climbing(None,optimization_target.STORE_OFFERS_DENSITY, [1, 1, 1, 1, 1, 1], 40, 40)
+    # exp.run_hill_climbing(None,optimization_target.STORE_OFFERS_DENSITY, [1, 1, 1, 1, 1, 1], 40, 40)
     # exp.run_hill_climbing(None,optimization_target.OFFERS_PRICE_FACTOR, (1,pf_offers_price_factor), 40, 40)
     # exp.run_hill_climbing(None,optimization_target.TOTAL_BUDGET_FACTOR, (1,pf_total_budget_factor), 40, 40)
 
