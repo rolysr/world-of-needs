@@ -14,7 +14,7 @@ class Environment:
 
     def __init__(self, number_human_agents, number_destination_agents, number_of_needs,
                  simulation_duration, gini_coef, mean_income, human_needs_density, offers_average_price,
-                 store_offers_density, stores_total_budget):  # Class constructor
+                 store_offers_density, stores_total_budget, store_distribution):  # Class constructor
         # check inputs are valid (to_do)
 
         # get number of human and destination agents
@@ -24,9 +24,17 @@ class Environment:
         # Generate random agents
         self.human_agents = generate_human_agents(
             number_human_agents, number_of_needs, gini_coef, mean_income, human_needs_density)
+
+        self.gini_coef = gini_coef
+        self.mean_income = mean_income
+        self.human_needs_density = human_needs_density
+        self.store_offers_density = store_offers_density
+        self.offers_average_price = offers_average_price
+        self.stores_total_budget = stores_total_budget
+        self.store_distribution = store_distribution
         self.destination_agents = generate_destination_agents(
             number_destination_agents, number_of_needs, store_offers_density,
-            offers_average_price, stores_total_budget)
+            offers_average_price, stores_total_budget, store_distribution)
 
         # set number of needs
         self.number_of_needs = number_of_needs
@@ -36,7 +44,11 @@ class Environment:
         self.graph, self.human_agents_locations, self.destination_agents_locations = generate_graph(
             self.human_agents, self.destination_agents)
 
-        self.distances_from_destination_agents = get_distances_from_destination_agents(self.destination_agents_locations, self.graph)
+        self.initial_human_agents_location = dict()
+        for x in self.human_agents_locations.keys():
+            self.initial_human_agents_location[x] = self.human_agents_locations[x]
+        self.distances_from_destination_agents = get_distances_from_destination_agents(
+            self.destination_agents_locations, self.graph)
 
         # The main data structure for updating the environment. This field is a priority queue with the actions that have to be executed on the environment
         # Each element has form (time_to_be_executed, human_agent_to_execute_action, other_data)
@@ -85,8 +97,6 @@ class Environment:
         while self.schedule.qsize() > 0 and self.schedule.queue[0][0] < self.total_time_elapsed:
             time, human_agent, action, destination_agent = self.schedule.get()
 
-            # print("Action {0} completed by human agent {1} over destination agent {2} at minutes elapsed {3}\n\n".format(
-            #     action, human_agent, destination_agent, time))
             # Log the action into the record.
             if action == 'arrival':
                 self.log_record.append((time, "{3}: The human agent {1} arrived at destination agent {2}.".format(
@@ -128,6 +138,7 @@ class Environment:
 
         # the agent receives the offers and try to make a valid request of needs
         request = human_agent.offers_requests(offers)
+
         total_value = 0
         for (id, amount) in request:
             for (ido, _, price) in destination_agent.offers:
@@ -221,22 +232,49 @@ class Environment:
             self.dsat_list[human_agent] = human_agent.dissatisfaction(
                 self.total_time_elapsed)
 
-    def reset(self, reset_human_agents_flag=True, reset_destination_agents_flag=True):
+    def reset(self, accumulate_flag=True, reset_human_agents_flag=True, reset_destination_agents_flag=True):
         """
             Reset function for the environment. This function should be called just before
             running again the environment.
         """
         if reset_human_agents_flag:
             for human_agent in self.human_agents:
-                human_agent.reset()
+                human_agent.reset(accumulate_flag)
         if reset_destination_agents_flag:
             for destination_agent in self.destination_agents:
-                destination_agent.reset()
+                destination_agent.reset(accumulate_flag)
 
+        for x in self.initial_human_agents_location.keys():
+            self.human_agents_locations[x] = self.initial_human_agents_location[x]
         self.schedule = generate_environment_schedule(
-            self.human_agents, self.human_agents_locations, self.destination_agents_locations, self.graph, self.number_of_needs)
+            self.human_agents, self.human_agents_locations, self.destination_agents_locations, self.number_of_needs, self.distances_from_destination_agents)
+
         self.total_time_elapsed = 0
         self.dsat_list = dict()
+        self.log_record = list()
+
+    def run_x_times(self, dsat_evaluator, x=30, time_step=10):
+        """
+            Runs and resets the environment x times. 
+            Returns the average of evaluating the dissatisfaction list at the end of these runs.
+        """
+        # Update destination agents params
+        index = 0
+        for destination_agent in self.destination_agents:
+            destination_agent.store_offers_density = self.store_offers_density
+            destination_agent.offers_average_price = self.offers_average_price
+            destination_agent.budget = self.stores_total_budget * \
+                self.store_distribution[index]
+            index += 1
+        self.reset(False, True, True)
+
+        dsat_evaluation_sum = 0
+        balances = 0
+        for i in range(x):
+            self.run(time_step)
+            dsat_evaluation_sum += dsat_evaluator(self.dsat_list.values())
+            self.reset(False, True, True)
+        return dsat_evaluation_sum / x
 
     def narrate(self, initial_time=0, end_time=None):
         """
