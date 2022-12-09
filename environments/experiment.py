@@ -34,7 +34,6 @@ class Experiment:
     def __init__(self, number_human_agents, number_destination_agents, number_of_needs,
                  simulation_duration, gini_coef, mean_income, offers_average_price=None, human_needs_density=None,
                  store_offers_density=None, stores_total_budget=None, store_distribution=None):
-
         self.env_based = False
         self.base_env = None
 
@@ -73,10 +72,7 @@ class Experiment:
         mean /= len(dsat_values)
         return mean
 
-    def default_temperature_function(self, iteration_index):
-        return 1.0/(iteration_index+1)
-
-    def default_settings(self, dsat_evaluator, temperature_function):
+    def default_settings(self, dsat_evaluator):
         """
             This function completes initial parameters if not assigned by the constructor fo the experiment.
         """
@@ -109,15 +105,11 @@ class Experiment:
         if dsat_evaluator == None:
             dsat_evaluator = self.default_dsat_evaluator
 
-        # Setting default temperature_function if None passed
-        if temperature_function == None:
-            temperature_function = self.default_temperature_function
-
         # Setting initial factors
         price_factor = 1
         budget_factor = 1
 
-        return (offers_average_price, human_needs_density, store_offers_density, stores_total_budget, store_distribution, dsat_evaluator, temperature_function, price_factor, budget_factor)
+        return (offers_average_price, human_needs_density, store_offers_density, stores_total_budget, store_distribution, dsat_evaluator, price_factor, budget_factor)
 
     def next_list(self, ini_vector, iteration):
         """
@@ -126,12 +118,14 @@ class Experiment:
             Paramater iteration might be used in further implementations.
         """
         ini_sum = 0
+        for x in ini_vector:
+            ini_sum+=x
         end_sum = 0
         close_vector = ini_vector
-        for i in range(len(close_vector)):
-            ini_sum += close_vector[i]
-            close_vector[i] *= uniform(0.8, 1.2)
-            end_sum += close_vector[i]
+        p1 = randint(0, len(ini_vector))
+        end_sum = ini_sum - ini_vector[p1]
+        ini_vector[p1]*=uniform(0.5, 3)
+        end_sum += ini_vector[p1]
 
         for i in range(len(close_vector)):
             close_vector[i] *= ini_sum/end_sum
@@ -144,9 +138,9 @@ class Experiment:
         """
         return ini_value * uniform(0.8, 1.2)
 
-    def run_SA_store_offers_density(self, dsat_evaluator, initial_store_offers_density, temperature_function, iterations):
+    def run_HC_store_offers_density(self, dsat_evaluator, initial_store_offers_density, iterations):
         (offers_average_price, human_needs_density, store_offers_density, stores_total_budget, store_distribution, dsat_evaluator,
-         temperature_function, price_factor, budget_factor) = self.default_settings(dsat_evaluator, temperature_function)
+         price_factor, budget_factor) = self.default_settings(dsat_evaluator)
 
         if initial_store_offers_density != None:
             store_offers_density = initial_store_offers_density
@@ -158,42 +152,37 @@ class Experiment:
         if self.env_based:
             env = self.base_env
 
-        eval = env.run_x_times(dsat_evaluator, 30, 10)
+        eval = env.run_x_times(dsat_evaluator, 100, 10)
 
         print("The initial state is:\n store_offers_density: {}\n with evaluation: {}".format(
             store_offers_density, eval))
 
-        for it_index in range(iterations):
-            temperature = temperature_function(it_index)
-            if temperature < EPS:
-                break
+        env.store_offers_density = human_needs_density
+        eval_hack = env.run_x_times(dsat_evaluator, 100, 10)
 
+        print("The initial state is:\n store_offers_density: {}\n with evaluation: {}".format(
+            human_needs_density, eval_hack))
+
+        env.store_offers_density = store_offers_density
+
+        for it_index in range(iterations):
             new_store_offers_density = self.next_list(
                 store_offers_density, it_index)
 
             env.store_offers_density = new_store_offers_density
 
-            delta_eval = eval - env.run_x_times(dsat_evaluator, 30, 10)
+            delta_eval = eval - env.run_x_times(dsat_evaluator, 100, 10)
 
             if delta_eval > EPS:  # improve!
-                store_offers_density = new_store_offers_density
-                eval -= delta_eval
-                continue
-
-            if delta_eval / temperature < -40:  # Means the probability is 0
-                continue
-
-            threshold = exp(delta_eval / temperature)
-            if uniform(0, 1) < threshold:
                 store_offers_density = new_store_offers_density
                 eval -= delta_eval
 
         print("The final state is:\n store_offers_density: {}\n with evaluation: {}".format(
             store_offers_density, eval))
 
-    def run_SA_store_distribution(self, dsat_evaluator, initial_store_distribution, temperature_function, iterations):
+    def run_HC_store_distribution(self, dsat_evaluator, initial_store_distribution, iterations):
         (offers_average_price, human_needs_density, store_offers_density, stores_total_budget, store_distribution, dsat_evaluator,
-         temperature_function, price_factor, budget_factor) = self.default_settings(dsat_evaluator, temperature_function)
+         price_factor, budget_factor) = self.default_settings(dsat_evaluator)
 
         if initial_store_distribution != None:
             store_distribution = initial_store_distribution
@@ -211,10 +200,6 @@ class Experiment:
             store_distribution, eval))
 
         for it_index in range(iterations):
-            temperature = temperature_function(it_index)
-            if temperature < EPS:
-                break
-
             new_store_distribution = self.next_list(
                 store_distribution, it_index)
 
@@ -227,20 +212,12 @@ class Experiment:
                 eval -= delta_eval
                 continue
 
-            if delta_eval / temperature < -40:  # Means the probability is 0
-                continue
-
-            threshold = exp(delta_eval / temperature)
-            if uniform(0, 1) < threshold:
-                store_offers_density = new_store_distribution
-                eval -= delta_eval
-
         print("The final state is:\n store_distribution: {}\n with evaluation: {}".format(
             store_distribution, eval))
 
-    def run_SA_price_factor(self, dsat_evaluator, initial_price_factor, penalty_function, temperature_function, iterations):
+    def run_HC_price_factor(self, dsat_evaluator, initial_price_factor, penalty_function, iterations):
         (offers_average_price, human_needs_density, store_offers_density, stores_total_budget, store_distribution, dsat_evaluator,
-         temperature_function, price_factor, budget_factor) = self.default_settings(dsat_evaluator, temperature_function)
+         price_factor, budget_factor) = self.default_settings(dsat_evaluator)
 
         price_factor = initial_price_factor
         base_offers_average_price = offers_average_price
@@ -261,10 +238,6 @@ class Experiment:
             price_factor, eval))
 
         for it_index in range(iterations):
-            temperature = temperature_function(it_index)
-            if temperature < EPS:
-                break
-
             new_price_factor = self.next_value(price_factor, it_index)
 
             env.offers_average_price = [new_price_factor *
@@ -278,20 +251,12 @@ class Experiment:
                 eval -= delta_eval
                 continue
 
-            if delta_eval / temperature < -40:  # Means the probability is 0
-                continue
-
-            threshold = exp(delta_eval / temperature)
-            if uniform(0, 1) < threshold:
-                price_factor = new_price_factor
-                eval -= delta_eval
-
         print("The final state is:\n price_factor: {}\n with evaluation: {}".format(
             price_factor, eval))
 
-    def run_SA_budget_factor(self, dsat_evaluator, initial_budget_factor, penalty_function, temperature_function, iterations):
+    def run_HC_budget_factor(self, dsat_evaluator, initial_budget_factor, penalty_function, iterations):
         (offers_average_price, human_needs_density, store_offers_density, stores_total_budget, store_distribution, dsat_evaluator,
-         temperature_function, price_factor, budget_factor) = self.default_settings(dsat_evaluator, temperature_function)
+         price_factor, budget_factor) = self.default_settings(dsat_evaluator)
 
         budget_factor = initial_budget_factor
         base_stores_total_budget = stores_total_budget
@@ -310,10 +275,6 @@ class Experiment:
             budget_factor, eval))
 
         for it_index in range(iterations):
-            temperature = temperature_function(it_index)
-            if temperature < EPS:
-                break
-
             new_budget_factor = self.next_value(budget_factor, it_index)
 
             env.stores_total_budget = new_budget_factor * base_stores_total_budget
@@ -326,19 +287,11 @@ class Experiment:
                 eval -= delta_eval
                 continue
 
-            if delta_eval / temperature < -40:  # Means the probability is 0
-                continue
-
-            threshold = exp(delta_eval / temperature)
-            if uniform(0, 1) < threshold:
-                budget_factor = new_budget_factor
-                eval -= delta_eval
-
         print("The final state is:\n budget_factor: {}\n with evaluation: {}".format(
             budget_factor, eval))
 
-    def run_simulated_annealing(self, dsat_evaluator, optimization_target: optimization_target,
-                                optimization_params, temperature_function, iterations: int = 100):
+    def run_hill_climbing(self, dsat_evaluator, optimization_target: optimization_target,
+                                optimization_params, iterations: int = 100):
         """
             Runs a Simulated-Annealing algorithm to optimize some target, minimizing the dissatisfaction 
             function given o saving resources.
@@ -360,14 +313,14 @@ class Experiment:
             - iterations is an upperbound on the number of iterations of the simulated annealing algo.
          """
         if optimization_target == optimization_target.STORE_OFFERS_DENSITY:
-            self.run_SA_store_offers_density(
-                dsat_evaluator, optimization_params, temperature_function, iterations)
+            self.run_HC_store_offers_density(
+                dsat_evaluator, optimization_params, iterations)
         if optimization_target == optimization_target.OFFERS_PRICE_FACTOR:
-            self.run_SA_price_factor(
-                dsat_evaluator, optimization_params[0], optimization_params[1], temperature_function, iterations)
+            self.run_HC_price_factor(
+                dsat_evaluator, optimization_params[0], optimization_params[1], iterations)
         if optimization_target == optimization_target.TOTAL_BUDGET_FACTOR:
-            self.run_SA_budget_factor(
-                dsat_evaluator, optimization_params[0], optimization_params[1], temperature_function, iterations)
+            self.run_HC_budget_factor(
+                dsat_evaluator, optimization_params[0], optimization_params[1], iterations)
         if optimization_target == optimization_target.STORE_DISTRIBUTION:
-            self.run_SA_store_distribution(
-                dsat_evaluator, optimization_params, temperature_function, iterations)
+            self.run_HC_store_distribution(
+                dsat_evaluator, optimization_params, iterations)

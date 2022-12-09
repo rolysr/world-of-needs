@@ -16,8 +16,8 @@ def generate_human_needs(number_of_needs, human_needs_density):
             continue
         priority = uniform(0, 100)
         amount = 0
-        for i in range(10):
-            amount += exponential(human_needs_density[i]+1)
+        for _ in range(10):
+            amount += exponential(human_needs_density[i] + 1)
         amount /= 10
         # a goal need is a tuple (priority, need_id, needed_amount)
         goal_needs.append((priority, i, amount))

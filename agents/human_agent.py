@@ -13,8 +13,8 @@ from utils.graph.algorithms.dijkstra import dijkstra
 # 2920 is the annual value
 GLOBAL_HUMAN_AVERAGE_INCOME = 2920/12
 # up to tune for better results, such be done in the testing of the whole simulation to check how it works
-TIME_DISSATISFACTION_WEIGHTING_FACTOR = 100
-MONEY_DISSATISFACTION_WEIGHTING_FACTOR = 100
+TIME_DISSATISFACTION_WEIGHTING_FACTOR = 5
+MONEY_DISSATISFACTION_WEIGHTING_FACTOR = 1
 
 
 class HumanAgent(Agent):
@@ -59,7 +59,7 @@ class HumanAgent(Agent):
                     need_amount, offer_amount, price = need[2], offer[1], offer[2]
                     # product amount to be adquired
                     amount_to_buy = min(
-                        need_amount, offer_amount, self.balance//price)
+                        need_amount, offer_amount, self.balance/price)
 
                     if amount_to_buy > 0:  # if human is going to get some need then update his internal state
                         self.needs[j] = (need[0], need[1],
@@ -135,6 +135,9 @@ class HumanAgent(Agent):
         # money dissatisfaction formula
         money_dissatisfaction = (self.base_balance-self.balance)*(
             1 + 1.0/normalized_income_rate)*MONEY_DISSATISFACTION_WEIGHTING_FACTOR
+        # print("{} {} {}\n".format(needs_dissatisfaction, time_dissatisfaction, money_dissatisfaction))
+        time_dissatisfaction *= 0
+        money_dissatisfaction *= 0
         return needs_dissatisfaction+time_dissatisfaction+money_dissatisfaction
 
     def reset(self, accumulate_flag=True):
@@ -144,21 +147,24 @@ class HumanAgent(Agent):
         """
         new_needs = generate_human_needs(
             self.number_of_needs, self.human_needs_density)
-        for new_need in new_needs:
-            ok = False
-            for i in range(len(self.needs)):
-                actual_need = self.needs[i]
-                if new_need[1] == actual_need[1]:
-                    if accumulate_flag:
+        if accumulate_flag:
+            for new_need in new_needs:
+                ok = False
+                for i in range(len(self.needs)):
+                    actual_need = self.needs[i]
+                    if new_need[1] == actual_need[1]:
                         updated_amount = new_need[2] + actual_need[2]
-                    else:
-                        updated_amount = new_need[2]
-                    self.needs[i] = (
-                        actual_need[0], actual_need[1], updated_amount)
-                    ok = True
-                    break
-            if not ok:
-                self.needs.append(new_need)
+                        self.needs[i] = (
+                            actual_need[0], actual_need[1], updated_amount)
+                        ok = True
+                        break
+                if not ok:
+                    self.needs.append(new_need)
+        else:
+            self.needs = new_needs
+            
+        self.needs.sort()
+        self.needs.reverse()
 
         self.visited_destinations = []
         if accumulate_flag:
