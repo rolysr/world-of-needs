@@ -1,15 +1,13 @@
 from utils.generator.human_generators.human_income_generator import generate_human_income
 
 def run_income_generator_test():
-    print("Gini: 0.0, income: 1000")
-    for i in range(20):
-        print(generate_human_income(0.0, 1000))
-        # print("")
-    print("Gini: 0.5, income: 1000")
-    for i in range(20):
-        print(generate_human_income(0.5, 1000))
-        # print("")
-    print("Gini: 0.9, income: 1000")
-    for i in range(100):
-        print(generate_human_income(0.9, 1000))
-        # print("")
+    gini_coefs=[0.0, 0.5, 0.6]
+    mean_income=[300, 300, 300]
+    for i in range(len(gini_coefs)):
+        print("Gini: {}, mean income: {}".format(gini_coefs[i],mean_income[i]))
+        sum = 0
+        for j in range(10000):
+            sum+=generate_human_income(gini_coefs[i], mean_income[i])
+        sum/=10000
+        print(sum)
+    

@@ -13,9 +13,8 @@ def generate_destination_offers(number_of_needs, store_offers_density, offers_av
     # select random needs to make offers
     total_cost = 0
     for i in range(number_of_needs):
-        price_factor = uniform(0.8, 1.2)
-        final_price = offers_average_price[i]*price_factor
-        amount = exponential(store_offers_density[i])
+        final_price = offers_average_price[i]
+        amount = store_offers_density[i] * uniform(0,2)
         # a goal need is a tuple (priority, need_id, needed_amount)
         offers.append((i, amount, final_price))
         total_cost += final_price * amount
