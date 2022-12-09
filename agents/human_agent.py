@@ -38,6 +38,7 @@ class HumanAgent(Agent):
         self.balance = generate_human_balance(self.income)
         # This has to be generated using random variables
         self.base_balance = self.balance
+        self.social_class = "high" if self.income >= 2*mean_income else ('low' if self.income < mean_income else 'medium')
 
     def offers_requests(self, offers):
         """
@@ -46,8 +47,17 @@ class HumanAgent(Agent):
             to satisfy his needs.
             The returned request will be used by destination agents
         """
-        offers_requests, self.needs, self.balance = genetic_offers_requests_policy(offers, self.income, self.needs, self.base_balance, self.balance, self.purchase_dissatisfaction)
+        offers_requests = []
 
+        if self.social_class == "low":
+            offers_requests, self.needs, self.balance = threshold_acceptance_offers_requests_policy(offers, self.income, self.needs, self.base_balance, self.balance, self.purchase_dissatisfaction)
+
+        elif self.social_class == "medium":
+            offers_requests, self.needs, self.balance = genetic_offers_requests_policy(offers, self.income, self.needs, self.base_balance, self.balance, self.purchase_dissatisfaction)
+
+        else:
+            offers_requests, self.needs, self.balance = brute_force_offers_requests_policy(offers, self.needs, self.balance)
+            
         return offers_requests
 
     def next_destination_to_move(self, human_location, destination_agents_locations, graph, number_of_needs):
