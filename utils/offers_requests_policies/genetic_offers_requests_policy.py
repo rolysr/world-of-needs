@@ -20,17 +20,19 @@ def genetic_offers_requests_policy(offers, income, needs, base_balance, balance,
         for i in range(len(population)):
             x = random_selection(population, mean_fitness)
             y = random_selection(population, mean_fitness)
-            if x != y: # if x is different from y as individual
-                child = reproduce(x, y, offers, needs, balance)
 
-            if uniform(0, 1) < 1/3:
-                child = mutate(child)
-                if child is None: #invalid mutation then continue
-                    continue
+            if x != y and x != None and y != None: # if x is different from y as individual
+                child = reproduce(x, y, offers, needs, balance, income, base_balance, goal_function)
 
-            new_population.append(child)
+                if uniform(0, 1) < 1/3:
+                    child = mutate(child, income, base_balance, goal_function)
+                    if child is None: #invalid mutation then continue
+                        continue
+
+                new_population.append(child)
         
-        population = new_population # update population
+        if len(new_population) > 0:
+            population = new_population # update population
 
     answer = best_individual(population) # get best solution
     offers_requests, needs, balance = answer[0], answer[2], answer[3] # get the updated return variables
@@ -50,7 +52,7 @@ def generate_initial_population(offers, income, needs, base_balance, balance, go
         if individual not in population:
             fitness = goal_function(income, individual[2], base_balance, individual[3]) # get individual fitness
             mean_fitness += fitness
-            population.append((individual, fitness))
+            population.append((fitness, individual))
 
     mean_fitness = mean_fitness/len(population)
 
@@ -60,13 +62,20 @@ def random_selection(population, threshold):
     """
         Selects a random individual randomly based on a given threshold
     """
-    best_individuals = [(individual, fitness) for (individual, fitness) in population if fitness < threshold] # select a group of individuals whose fitness is better than some threshold
-    rand_index = randrange(0, len(best_individuals))
-    individual = best_individuals[rand_index][1]
+    best_individuals = [] # select a group of individuals whose fitness is better than some threshold
+    for individual in population:
+        if individual[0] < threshold:
+            best_individuals.append(individual)
+
+    if len(best_individuals) == 0:
+        return None
+
+    rand_index = randrange(0, len(best_individuals)) # select random individual from best individuals
+    individual = best_individuals[rand_index]
     
     return individual
 
-def reproduce(x, y, offers, needs, balance):
+def reproduce(x, y, offers, needs, balance, income, base_balance, goal_function):
     """
         Reproduces two individuals (solutions) in order
         to get a child who is the result of the defined
@@ -76,12 +85,12 @@ def reproduce(x, y, offers, needs, balance):
     index_not_matching_offers = set() # indexes of offers that did not matched in offers requests
     current_offers, current_needs, current_balance = deepcopy(offers), deepcopy(needs), deepcopy(balance)
 
-    offers_requests_x, offers_requests_y = x[0], y[0] # get individual's offers requests
+    offers_requests_x, offers_requests_y = x[1][0], y[1][0] # get individual's offers requests
     for i in range(len(offers_requests_x)):
         offer_request_x = offers_requests_x[i]
         for j in range(len(offers_requests_y)):
             offer_request_y = offers_requests_y[j]
-
+            
             if offer_request_x[0] == offer_request_y[0]: # in case there is a common offert, create a new offert with the average selection
                 amount_to_buy = (offer_request_x[1] + offer_request_y[1]) / 2
                 if amount_to_buy > 0:
@@ -100,7 +109,7 @@ def reproduce(x, y, offers, needs, balance):
         amount_to_buy = request[1]
         current_balance -= amount_to_buy*offers[offer_index][2]
         current_needs[need_index] = (current_needs[need_index][0], current_needs[need_index][1], current_needs[need_index][2]-amount_to_buy)
-        current_offers[offer_index][1] -= amount_to_buy
+        current_offers[offer_index] = (current_offers[offer_index][0], current_offers[offer_index][1] - amount_to_buy, current_offers[offer_index][2])
 
     # update needs, just keep track for unsatisfied ones
     current_needs = [need for need in current_needs if need[2] > 0]
@@ -123,7 +132,8 @@ def reproduce(x, y, offers, needs, balance):
                     # add a request with format (<offer_id>, amount_to_buy)
                     offers_requests.append((offer[0], amount_to_buy))
 
-    return offers_requests, current_offers, current_needs, current_balance
+    fitness = goal_function(income, current_needs, base_balance, current_balance)
+    return fitness, (offers_requests, current_offers, current_needs, current_balance)
 
 
 def best_individual(population):
@@ -133,7 +143,7 @@ def best_individual(population):
         This individual is the algorithm final answer
     """
     best_i, best_fitness = None, inf
-    for individual, fitness in population:
+    for fitness, individual in population:
         if fitness < best_fitness: # if better individual found, then update best individual
             best_fitness = fitness
             best_i = individual
@@ -157,15 +167,22 @@ def get_needs_index_with_id(id, needs):
         in the needs
     """
     for i in range(len(needs)):
-        if needs[1] == id:
+        if needs[i][1] == id:
             return i
     
     return -1
 
-def mutate(individual):
+def mutate(individual, income, base_balance, goal_function):
     """
         Mutate method in order to make a difference
         for new population with some probability
     """
-    individual = generate_random_neighbor(*individual)
-    return individual
+    try:
+        individual = individual[1]
+        individual = generate_random_neighbor(individual[0], individual[1], individual[2], individual[3])
+        fitness = goal_function(income, individual[2], base_balance, individual[3])
+        answer = (fitness, individual)
+    except:
+        answer = None
+
+    return answer

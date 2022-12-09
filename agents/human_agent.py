@@ -46,7 +46,7 @@ class HumanAgent(Agent):
             to satisfy his needs.
             The returned request will be used by destination agents
         """
-        offers_requests, self.needs, self.balance = threshold_acceptance_offers_requests_policy(offers, self.income, self.needs, self.base_balance, self.balance, self.purchase_dissatisfaction)
+        offers_requests, self.needs, self.balance = genetic_offers_requests_policy(offers, self.income, self.needs, self.base_balance, self.balance, self.purchase_dissatisfaction)
 
         return offers_requests
 

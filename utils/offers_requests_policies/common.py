@@ -31,8 +31,6 @@ def generate_random_solution(current_offers, current_needs, current_balance):
                     balance -= amount_to_buy*price  # update human balance
                     # add a request with format (<offer_id>, amount_to_buy)
                     offers_requests.append((offer[0], amount_to_buy))
-                    print(i, len(offers))
-                    print(offers[i])
                     offers[i] = (offers[i][0], offers[i][1]-amount_to_buy, offers[i][2]) #update offers
 
     # update needs and offers, just keep track for unsatisfied ones
