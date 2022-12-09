@@ -13,17 +13,20 @@ class DestinationAgent(Agent):
         super().__init__()  # init parent Agent class
         # Parameters for the creation of this instance of destination agent
         self.params = (number_of_needs, store_offers_density, offers_average_price)
+
         # The needs this can satisfy by offers. (need_id, need_available_amout, price)
         self.offers = generate_destination_offers(number_of_needs, store_offers_density, offers_average_price, store_budget)
+
         # Total time the agent works
         self.total_time_working = generate_destination_working_time()
+
         # During execution it denotes the time the system will be available for the next client
         self.next_available_time = 0
         self.number_current_clients = 0  # Number of human agents in the attention queue
         self.queue = Queue() # The queue of people waiting to be attended
 
-    # Attention time for a given client is Poisson-distributed
     def attention_time(self):
+        """Attention time for a given client is Poisson-distributed"""
         return generate_destination_attention_time()
 
     def process_offers_requests(self, offers_requests):
@@ -61,6 +64,7 @@ class DestinationAgent(Agent):
                     break
             if not ok:
                 self.offers.append(new_offer)
+                
         self.next_available_time = 0
         self.number_current_clients = 0  
         self.queue = Queue()
