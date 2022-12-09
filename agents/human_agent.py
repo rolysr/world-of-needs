@@ -4,9 +4,8 @@ from utils.generator.human_generators.human_balance_generator import generate_hu
 from utils.generator.human_generators.human_needs_generator import generate_human_needs
 from utils.generator.human_generators.human_speed_generator import generate_human_speed
 from utils.generator.human_generators.human_income_generator import generate_human_income
-from utils.graph.algorithms.multigoal_astar import multigoal_astar
-from utils.graph.algorithms.multigoal_astar_heuristic import multigoal_astar_heuristic
-from utils.graph.algorithms.dijkstra import dijkstra
+from utils.next_destination_logic.destination_agents_quality import get_destination_agents_quality
+from utils.next_destination_logic.distances_from_destination_agents import get_distances_from_destination_agents
 from utils.offers_requests_policies.brute_force_offers_requests_policy import brute_force_offers_requests_policy
 from utils.offers_requests_policies.genetic_offers_requests_policy import genetic_offers_requests_policy
 from utils.offers_requests_policies.threshold_acceptance_offers_requests_policy import threshold_acceptance_offers_requests_policy
@@ -60,7 +59,7 @@ class HumanAgent(Agent):
             
         return offers_requests
 
-    def next_destination_to_move(self, human_location, destination_agents_locations, graph, number_of_needs):
+    def next_destination_to_move(self, human_location, destination_agents_locations, number_of_needs, distances_from_destination_agents):
         """
             This method receives a location that is the current (initial) agent
             position, a group of destination agents and a graph.  The output is the next destination
@@ -68,31 +67,25 @@ class HumanAgent(Agent):
             the destination distance and human agent speed 
         """
         best_destination_agent = None  # best destination agent
+        best_destination_quality = inf
+        minimum_real_distance = inf
         destination_agents_locations = {destination_agent: destination_agents_locations[destination_agent] for destination_agent in destination_agents_locations.keys(
         ) if destination_agent not in self.visited_destinations}  # set possible destination to go if not visited
+        destinations_qualities = get_destination_agents_quality(self, destination_agents_locations.keys(), number_of_needs)
         
-        # get real distance for all destination agents
-        destinations_real_distances = dijkstra(human_location, graph)
-        minimum_real_distance = inf  # minimum distances
-        
-        # get heuristic function
-        heuristic_function = multigoal_astar_heuristic(
-            destination_agents_locations, graph, self, destination_agents_locations.keys(), number_of_needs)  # get astar heuristic function
-        
-        # execute multigoal astar
-        best_destination_node = multigoal_astar(
-            human_location, destination_agents_locations.values(), graph, heuristic_function)
+        # select best destination agent
+        for destination in destination_agents_locations.keys():
+            destination_location = destination_agents_locations[destination] # get destination location
+            destination_distance_to_human = distances_from_destination_agents[destination_location][human_location] # get destination distance
+            destination_quality = destination_distance_to_human * destinations_qualities[destination]
 
-        # update minimum real distance
-        minimum_real_distance = destinations_real_distances[best_destination_node]
+            if destination_quality < best_destination_quality:
+                best_destination_agent = destination
+                best_destination_quality = destination_quality
+                minimum_real_distance = destination_distance_to_human
 
         # calculate time for the travel
-        travel_time = minimum_real_distance / self.speed
-        
-        # get best destination agent assuming there is no two destination agents at the same place
-        for destination in destination_agents_locations.keys():
-            if destination_agents_locations[destination] == best_destination_node:
-                best_destination_agent = destination
+        travel_time = minimum_real_distance / (self.speed * 60)
 
         # return best destination to go and the travel time it consumes
         return best_destination_agent, travel_time

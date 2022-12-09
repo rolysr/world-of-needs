@@ -3,6 +3,7 @@ from utils.generator.environment_schedule_generator import generate_environment_
 from utils.generator.graph_generator import *
 from utils.generator.human_generators.human_generator import generate_human_agents
 from agents.destination_agent import *
+from utils.next_destination_logic.distances_from_destination_agents import get_distances_from_destination_agents
 from utils.product_name_strings import PRODUCT_NAME_STRINGS
 
 
@@ -35,12 +36,12 @@ class Environment:
         self.graph, self.human_agents_locations, self.destination_agents_locations = generate_graph(
             self.human_agents, self.destination_agents)
 
-        # print(self.graph)
+        self.distances_from_destination_agents = get_distances_from_destination_agents(self.destination_agents_locations, self.graph)
 
         # The main data structure for updating the environment. This field is a priority queue with the actions that have to be executed on the environment
         # Each element has form (time_to_be_executed, human_agent_to_execute_action, other_data)
         self.schedule = generate_environment_schedule(
-            self.human_agents, self.human_agents_locations, self.destination_agents_locations, self.graph, self.number_of_needs)
+            self.human_agents, self.human_agents_locations, self.destination_agents_locations, self.number_of_needs, self.distances_from_destination_agents)
 
         # Internal time elapsed in minutes
         self.total_time_elapsed = 0
@@ -176,7 +177,7 @@ class Environment:
         # once the human finishes negotiation process, tries to move to another place in case there is needs left
         if len(human_agent.needs) > 0 and len(human_agent.visited_destinations) != self.number_destination_agents:
             destination, arrival_time = human_agent.next_destination_to_move(
-                self.human_agents_locations[human_agent], self.destination_agents_locations, self.graph, self.number_of_needs)
+                self.human_agents_locations[human_agent], self.destination_agents_locations, self.number_of_needs, self.distances_from_destination_agents)
             self.schedule.put(
                 (arrival_time + time, human_agent, 'arrival', destination))
         else:
@@ -213,7 +214,7 @@ class Environment:
         # in case the human agent does not want to stay in queue and assuming there is more places to visit, then redifines his plan
         elif len(human_agent.needs) > 0 and len(human_agent.visited_destinations) != self.number_destination_agents:
             destination, arrival_time = human_agent.next_destination_to_move(
-                self.human_agents_locations[human_agent], self.destination_agents_locations, self.graph, self.number_of_needs)
+                self.human_agents_locations[human_agent], self.destination_agents_locations, self.number_of_needs, self.distances_from_destination_agents)
             self.schedule.put(
                 (arrival_time + time, human_agent, 'arrival', destination))
         else:
