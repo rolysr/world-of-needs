@@ -1,5 +1,4 @@
-from random import randrange
-from utils.random_variables import *
+from random import randrange, uniform
 
 if __name__ == "__main__":
-    print(randrange(1, 2))
+    print(uniform(0, 5))

@@ -1,13 +1,14 @@
 from math import inf
-from turtle import distance
 from agents.agent import Agent
 from utils.generator.human_generators.human_balance_generator import generate_human_balance
 from utils.generator.human_generators.human_needs_generator import generate_human_needs
 from utils.generator.human_generators.human_speed_generator import generate_human_speed
 from utils.generator.human_generators.human_income_generator import generate_human_income
-from utils.graph.algorithms.multigoal_astar import multigoal_astar
-from utils.graph.algorithms.multigoal_astar_heuristic import multigoal_astar_heuristic
-from utils.graph.algorithms.dijkstra import dijkstra
+from utils.next_destination_logic.destination_agents_quality import get_destination_agents_quality
+from utils.next_destination_logic.distances_from_destination_agents import get_distances_from_destination_agents
+from utils.offers_requests_policies.brute_force_offers_requests_policy import brute_force_offers_requests_policy
+from utils.offers_requests_policies.genetic_offers_requests_policy import genetic_offers_requests_policy
+from utils.offers_requests_policies.threshold_acceptance_offers_requests_policy import threshold_acceptance_offers_requests_policy
 
 # up to add to settings file (value taken from https://news.gallup.com/poll/166211/worldwide-median-household-income-000.aspx)
 # 2920 is the annual value
@@ -38,6 +39,7 @@ class HumanAgent(Agent):
         self.balance = generate_human_balance(self.income)
         # This has to be generated using random variables
         self.base_balance = self.balance
+        self.social_class = "high" if self.income >= 2*mean_income else ('low' if self.income < mean_income else 'medium')
 
     def offers_requests(self, offers):
         """
@@ -48,32 +50,18 @@ class HumanAgent(Agent):
         """
         offers_requests = []
 
-        for i in range(len(offers)):
-            offer = offers[i]  # offer at position i
+        if self.social_class == "low":
+            offers_requests, self.needs, self.balance = threshold_acceptance_offers_requests_policy(offers, self.income, self.needs, self.base_balance, self.balance, self.purchase_dissatisfaction)
 
-            for j in range(len(self.needs)):
-                need = self.needs[j]  # need at position j
+        elif self.social_class == "medium":
+            offers_requests, self.needs, self.balance = genetic_offers_requests_policy(offers, self.income, self.needs, self.base_balance, self.balance, self.purchase_dissatisfaction)
 
-                # if offer matches the need and then try to satisfy it as possible
-                if need[1] == offer[0]:
-                    need_amount, offer_amount, price = need[2], offer[1], offer[2]
-                    # product amount to be adquired
-                    amount_to_buy = min(
-                        need_amount, offer_amount, self.balance/price)
-
-                    if amount_to_buy > 0:  # if human is going to get some need then update his internal state
-                        self.needs[j] = (need[0], need[1],
-                                         need[2]-amount_to_buy)
-                        self.balance -= amount_to_buy*price  # update human balance
-                        # add a request with format (<offer_id>, amount_to_buy)
-                        offers_requests.append((offer[0], amount_to_buy))
-
-        # update needs, just keep track for unsatisfied ones
-        self.needs = [need for need in self.needs if need[2] > 0]
-
+        else:
+            offers_requests, self.needs, self.balance = brute_force_offers_requests_policy(offers, self.needs, self.balance)
+            
         return offers_requests
 
-    def next_destination_to_move(self, human_location, destination_agents_locations, graph, number_of_needs):
+    def next_destination_to_move(self, human_location, destination_agents_locations, number_of_needs, distances_from_destination_agents):
         """
             This method receives a location that is the current (initial) agent
             position, a group of destination agents and a graph.  The output is the next destination
@@ -81,31 +69,25 @@ class HumanAgent(Agent):
             the destination distance and human agent speed 
         """
         best_destination_agent = None  # best destination agent
+        best_destination_quality = inf
+        minimum_real_distance = inf
         destination_agents_locations = {destination_agent: destination_agents_locations[destination_agent] for destination_agent in destination_agents_locations.keys(
         ) if destination_agent not in self.visited_destinations}  # set possible destination to go if not visited
+        destinations_qualities = get_destination_agents_quality(self, destination_agents_locations.keys(), number_of_needs)
+        
+        # select best destination agent
+        for destination in destination_agents_locations.keys():
+            destination_location = destination_agents_locations[destination] # get destination location
+            destination_distance_to_human = distances_from_destination_agents[destination_location][human_location] # get destination distance
+            destination_quality = destination_distance_to_human * destinations_qualities[destination]
 
-        # get real distance for all destination agents
-        destinations_real_distances = dijkstra(human_location, graph)
-        minimum_real_distance = inf  # minimum distances
-
-        # get heuristic function
-        heuristic_function = multigoal_astar_heuristic(
-            destination_agents_locations, graph, self, destination_agents_locations.keys(), number_of_needs)  # get astar heuristic function
-
-        # execute multigoal astar
-        best_destination_node = multigoal_astar(
-            human_location, destination_agents_locations.values(), graph, heuristic_function)
-
-        # update minimum real distance
-        minimum_real_distance = destinations_real_distances[best_destination_node]
+            if destination_quality < best_destination_quality:
+                best_destination_agent = destination
+                best_destination_quality = destination_quality
+                minimum_real_distance = destination_distance_to_human
 
         # calculate time for the travel
-        travel_time = minimum_real_distance / self.speed
-
-        # get best destination agent assuming there is no two destination agents at the same place
-        for destination in destination_agents_locations.keys():
-            if destination_agents_locations[destination] == best_destination_node:
-                best_destination_agent = destination
+        travel_time = minimum_real_distance / (self.speed * 60)
 
         # return best destination to go and the travel time it consumes
         return best_destination_agent, travel_time
@@ -124,16 +106,30 @@ class HumanAgent(Agent):
         # Let's use time, actual needs and balance to find a satisfaction function
         # Also uses the income rate of the human agent
         normalized_income_rate = self.income / GLOBAL_HUMAN_AVERAGE_INCOME
-        # needs dissatisfaction formula
-        needs_dissatisfaction = 0
-        for tuple in self.needs:
-            needs_dissatisfaction += normalized_income_rate * \
-                tuple[0]*(tuple[2]**2)
         # time dissatisfaction formula
         time_dissatisfaction = time*normalized_income_rate * \
             TIME_DISSATISFACTION_WEIGHTING_FACTOR
+        
+        purchase_dissatisfaction = self.purchase_dissatisfaction(self.income, self.needs, self.base_balance, self.balance)
+
+        return time_dissatisfaction + purchase_dissatisfaction
+
+    def purchase_dissatisfaction(self, income, needs, base_balance, balance):
+        """
+            Purchase dissatisfaction for getting the
+            quality after a human agent purchase process
+        """
+        # Let's use time, actual needs and balance to find a satisfaction function
+        # Also uses the income rate of the human agent
+        normalized_income_rate = income / GLOBAL_HUMAN_AVERAGE_INCOME
+
+        # needs dissatisfaction formula
+        needs_dissatisfaction = 0
+        for tuple in needs:
+            needs_dissatisfaction += normalized_income_rate*tuple[0]*(tuple[2]**2)
+
         # money dissatisfaction formula
-        money_dissatisfaction = (self.base_balance-self.balance)*(
+        money_dissatisfaction = (base_balance-balance)*(
             1 + 1.0/normalized_income_rate)*MONEY_DISSATISFACTION_WEIGHTING_FACTOR
         # print("{} {} {}\n".format(needs_dissatisfaction, time_dissatisfaction, money_dissatisfaction))
         time_dissatisfaction *= 0
