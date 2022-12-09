@@ -22,15 +22,8 @@ def generate_human_income(gini_coef: float, mean_income):
         k is a parameter for weighting the aproaches described in the paper, 0<=k<=1
     """
     x = uniform(0.0, 1.0)
-    # print(x)
     k = HUMAN_INCOME_GENERATOR_PARAMETER_K
     p = (1.0+gini_coef)/(1.0-gini_coef)
-    # print(k)
-    # print(gini_coef)
-    # print("p vale {} {} {}".format(p, (1.0+gini_coef),(1.0-gini_coef)))
     y = (1.0 - k) * pow(x, p) + k * (1.0 - pow(1.0 - x, 1.0 / p))
-    # print("y vale {}".format(y))
-    # print("pow1 vale {}".format(pow(x, p)))
-    # print("pow2 vale {}".format(pow(1.0 - x, 1.0 / p)))
     y = p * (1 - k) * pow(x, p - 1) + (k/p)*pow(1-x, (1/p)-1)
     return y * mean_income

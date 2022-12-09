@@ -23,7 +23,7 @@ def generate_random_solution(current_offers, current_needs, current_balance):
                 need_amount, offer_amount, price = need[2], offer[1], offer[2]
                 # product amount to be adquired. Random possible purchase
                 amount_to_buy = uniform(0, min(
-                    need_amount, offer_amount, balance//price))
+                    need_amount, offer_amount, balance/price))
 
                 if amount_to_buy > 0:  # if human is going to get some need then update his internal state
                     needs[j] = (need[0], need[1],
@@ -70,7 +70,7 @@ def generate_random_neighbor(current_solution, current_offers, current_needs, cu
     need_amount, offer_amount, price = need[2], offer[1], offer[2]
     # product amount to be adquired.
     amount_to_buy = min(
-        need_amount, offer_amount, balance//price)
+        need_amount, offer_amount, balance/price)
 
     if amount_to_buy > 0:  # if human is going to get some need then update his internal state
         needs[j] = (need[0], need[1],

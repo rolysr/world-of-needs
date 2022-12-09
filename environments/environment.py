@@ -47,7 +47,8 @@ class Environment:
         self.initial_human_agents_location = dict()
         for x in self.human_agents_locations.keys():
             self.initial_human_agents_location[x] = self.human_agents_locations[x]
-        self.distances_from_destination_agents = get_distances_from_destination_agents(self.destination_agents_locations, self.graph)
+        self.distances_from_destination_agents = get_distances_from_destination_agents(
+            self.destination_agents_locations, self.graph)
 
         # The main data structure for updating the environment. This field is a priority queue with the actions that have to be executed on the environment
         # Each element has form (time_to_be_executed, human_agent_to_execute_action, other_data)
@@ -134,13 +135,10 @@ class Environment:
             is updated. Negotiation time is also provided
         """
         offers = destination_agent.offers  # destination agent's offers
-        # print("\nNegotiation ended:")
-        # print(human_agent.needs)
-        # print(offers)
 
         # the agent receives the offers and try to make a valid request of needs
         request = human_agent.offers_requests(offers)
-        # print(request)
+
         total_value = 0
         for (id, amount) in request:
             for (ido, _, price) in destination_agent.offers:
@@ -249,7 +247,7 @@ class Environment:
         for x in self.initial_human_agents_location.keys():
             self.human_agents_locations[x] = self.initial_human_agents_location[x]
         self.schedule = generate_environment_schedule(
-            self.human_agents, self.human_agents_locations, self.destination_agents_locations, self.graph, self.number_of_needs)
+            self.human_agents, self.human_agents_locations, self.destination_agents_locations, self.number_of_needs, self.distances_from_destination_agents)
 
         self.total_time_elapsed = 0
         self.dsat_list = dict()
@@ -265,59 +263,18 @@ class Environment:
         for destination_agent in self.destination_agents:
             destination_agent.store_offers_density = self.store_offers_density
             destination_agent.offers_average_price = self.offers_average_price
-            destination_agent.budget = self.stores_total_budget * self.store_distribution[index]
-            index+=1
+            destination_agent.budget = self.stores_total_budget * \
+                self.store_distribution[index]
+            index += 1
         self.reset(False, True, True)
 
-        # print(self.store_offers_density[3])
-        # print(self.store_offers_density[4])
         dsat_evaluation_sum = 0
-        # sum = [0 for i in range(self.number_of_needs)]
-        # sumn = [0 for i in range(self.number_of_needs)]
-        # sumf = [0 for i in range(self.number_of_needs)]
-        # sumfn = [0 for i in range(self.number_of_needs)]
-        # sumff = [0 for i in range(self.number_of_needs)]
         balances = 0
         for i in range(x):
-            # print("the sum is:{}".format(sum))
-            # for ds in self.destination_agents:
-            #     # print(ds.offers[0][1])
-            #     for i in range(self.number_of_needs):
-            #         sum[i] += ds.offers[i][1]
-            # for ds in self.human_agents:
-            #     # print(ds.offers[0][1])
-            #     balances += ds.base_balance
-            #     for need in ds.needs:
-            #         sumn[need[1]] += need[2]
-            #         sumf[need[1]] += 1
             self.run(time_step)
-            # for ds in self.human_agents:
-            #     # print(ds.offers[0][1])
-            #     for need in ds.needs:
-            #         sumfn[need[1]] += need[2]
-            #         sumff[need[1]] += 1
             dsat_evaluation_sum += dsat_evaluator(self.dsat_list.values())
-            # self.narrate()
-            # print(dsat_evaluator(self.dsat_list.values()))
-            # print("")
             self.reset(False, True, True)
-        # summv = [sumn[i]/sumf[i] for i in range(self.number_of_needs)]
-        # sumfmv = [sumfn[i]/sumff[i] for i in range(self.number_of_needs)]
-        # print(sum)
-        # print(sumn)
-        # print(sumf)
-        # print(summv)
-        # print(sumfn)
-        # print(sumff)
-        # print(sumfmv)
-        # print(balances / (x*self.number_human_agents))
         return dsat_evaluation_sum / x
-
-    def print_agents(self):
-        for x in self.destination_agents:
-            print(x)
-        for x in self.human_agents:
-            print(x)
 
     def narrate(self, initial_time=0, end_time=None):
         """

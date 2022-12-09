@@ -138,7 +138,7 @@ class Experiment:
         """
         return ini_value * uniform(0.8, 1.2)
 
-    def run_HC_store_offers_density(self, dsat_evaluator, initial_store_offers_density, iterations):
+    def run_HC_store_offers_density(self, dsat_evaluator, initial_store_offers_density, iterations, eval_iterations):
         (offers_average_price, human_needs_density, store_offers_density, stores_total_budget, store_distribution, dsat_evaluator,
          price_factor, budget_factor) = self.default_settings(dsat_evaluator)
 
@@ -152,18 +152,10 @@ class Experiment:
         if self.env_based:
             env = self.base_env
 
-        eval = env.run_x_times(dsat_evaluator, 100, 10)
+        eval = env.run_x_times(dsat_evaluator, eval_iterations, 10)
 
         print("The initial state is:\n store_offers_density: {}\n with evaluation: {}".format(
             store_offers_density, eval))
-
-        env.store_offers_density = human_needs_density
-        eval_hack = env.run_x_times(dsat_evaluator, 100, 10)
-
-        print("The initial state is:\n store_offers_density: {}\n with evaluation: {}".format(
-            human_needs_density, eval_hack))
-
-        env.store_offers_density = store_offers_density
 
         for it_index in range(iterations):
             new_store_offers_density = self.next_list(
@@ -171,7 +163,7 @@ class Experiment:
 
             env.store_offers_density = new_store_offers_density
 
-            delta_eval = eval - env.run_x_times(dsat_evaluator, 100, 10)
+            delta_eval = eval - env.run_x_times(dsat_evaluator, eval_iterations, 10)
 
             if delta_eval > EPS:  # improve!
                 store_offers_density = new_store_offers_density
@@ -180,7 +172,7 @@ class Experiment:
         print("The final state is:\n store_offers_density: {}\n with evaluation: {}".format(
             store_offers_density, eval))
 
-    def run_HC_store_distribution(self, dsat_evaluator, initial_store_distribution, iterations):
+    def run_HC_store_distribution(self, dsat_evaluator, initial_store_distribution, iterations, eval_iterations):
         (offers_average_price, human_needs_density, store_offers_density, stores_total_budget, store_distribution, dsat_evaluator,
          price_factor, budget_factor) = self.default_settings(dsat_evaluator)
 
@@ -194,7 +186,7 @@ class Experiment:
         if self.env_based:
             env = self.base_env
 
-        eval = env.run_x_times(dsat_evaluator, 30, 10)
+        eval = env.run_x_times(dsat_evaluator, eval_iterations, 10)
 
         print("The initial state is:\n store_distribution: {}\n with evaluation: {}".format(
             store_distribution, eval))
@@ -205,7 +197,7 @@ class Experiment:
 
             env.store_distribution = new_store_distribution
 
-            delta_eval = eval - env.run_x_times(dsat_evaluator, 30, 10)
+            delta_eval = eval - env.run_x_times(dsat_evaluator, eval_iterations, 10)
 
             if delta_eval > EPS:  # improve!
                 store_offers_density = new_store_distribution
@@ -215,7 +207,7 @@ class Experiment:
         print("The final state is:\n store_distribution: {}\n with evaluation: {}".format(
             store_distribution, eval))
 
-    def run_HC_price_factor(self, dsat_evaluator, initial_price_factor, penalty_function, iterations):
+    def run_HC_price_factor(self, dsat_evaluator, initial_price_factor, penalty_function, iterations, eval_iterations):
         (offers_average_price, human_needs_density, store_offers_density, stores_total_budget, store_distribution, dsat_evaluator,
          price_factor, budget_factor) = self.default_settings(dsat_evaluator)
 
@@ -232,7 +224,7 @@ class Experiment:
             env = self.base_env
             
         eval = penalty_function(env.run_x_times(
-            dsat_evaluator, 30, 10), price_factor)
+            dsat_evaluator, eval_iterations, 10), price_factor)
 
         print("The initial state is:\n price_factor: {}\n with evaluation: {}".format(
             price_factor, eval))
@@ -244,7 +236,7 @@ class Experiment:
                                         price for price in base_offers_average_price]
 
             delta_eval = eval - penalty_function(env.run_x_times(
-                dsat_evaluator, 30, 10), price_factor)
+                dsat_evaluator, eval_iterations, 10), price_factor)
 
             if delta_eval > EPS:  # improve!
                 price_factor = new_price_factor
@@ -254,7 +246,7 @@ class Experiment:
         print("The final state is:\n price_factor: {}\n with evaluation: {}".format(
             price_factor, eval))
 
-    def run_HC_budget_factor(self, dsat_evaluator, initial_budget_factor, penalty_function, iterations):
+    def run_HC_budget_factor(self, dsat_evaluator, initial_budget_factor, penalty_function, iterations, eval_iterations):
         (offers_average_price, human_needs_density, store_offers_density, stores_total_budget, store_distribution, dsat_evaluator,
          price_factor, budget_factor) = self.default_settings(dsat_evaluator)
 
@@ -269,7 +261,7 @@ class Experiment:
             env = self.base_env
             
         eval = penalty_function(env.run_x_times(
-            dsat_evaluator, 30, 10), budget_factor)
+            dsat_evaluator, eval_iterations, 10), budget_factor)
 
         print("The initial state is:\n budget_factor: {}\n with evaluation: {}".format(
             budget_factor, eval))
@@ -280,7 +272,7 @@ class Experiment:
             env.stores_total_budget = new_budget_factor * base_stores_total_budget
 
             delta_eval = eval - penalty_function(env.run_x_times(
-                dsat_evaluator, 30, 10), budget_factor)
+                dsat_evaluator, eval_iterations, 10), budget_factor)
 
             if delta_eval > EPS:  # improve!
                 budget_factor = new_budget_factor
@@ -291,10 +283,10 @@ class Experiment:
             budget_factor, eval))
 
     def run_hill_climbing(self, dsat_evaluator, optimization_target: optimization_target,
-                                optimization_params, iterations: int = 100):
+                            optimization_params, iterations: int = 100, eval_iterations: int = 30):
         """
-            Runs a Simulated-Annealing algorithm to optimize some target, minimizing the dissatisfaction 
-            function given o saving resources.
+            Runs a Hill Climbing algorithm to optimize some target, minimizing the dissatisfaction 
+            function given or saving resources.
 
             Notes:
             - dsat_evaluator is a function that evaluates a list of dissatisfaction values and returns 
@@ -308,19 +300,18 @@ class Experiment:
                 trivial improvements and the optimization objective is to minimize the penalty function. 
                 The penalty function should have two parameters: the evaluation of dissatisfaction and the 
                 factor value in that order. 
-            - temperature_function: evaluates the index of the current iteration an returns a real value.
-            Must converge to 0 when the argument increases.
             - iterations is an upperbound on the number of iterations of the simulated annealing algo.
+            - eval_iterations is the number of simulations done when evaluating a combination of parameters
          """
         if optimization_target == optimization_target.STORE_OFFERS_DENSITY:
             self.run_HC_store_offers_density(
-                dsat_evaluator, optimization_params, iterations)
+                dsat_evaluator, optimization_params, iterations, eval_iterations)
         if optimization_target == optimization_target.OFFERS_PRICE_FACTOR:
             self.run_HC_price_factor(
-                dsat_evaluator, optimization_params[0], optimization_params[1], iterations)
+                dsat_evaluator, optimization_params[0], optimization_params[1], iterations, eval_iterations)
         if optimization_target == optimization_target.TOTAL_BUDGET_FACTOR:
             self.run_HC_budget_factor(
-                dsat_evaluator, optimization_params[0], optimization_params[1], iterations)
+                dsat_evaluator, optimization_params[0], optimization_params[1], iterations, eval_iterations)
         if optimization_target == optimization_target.STORE_DISTRIBUTION:
             self.run_HC_store_distribution(
-                dsat_evaluator, optimization_params, iterations)
+                dsat_evaluator, optimization_params, iterations, eval_iterations)

@@ -39,7 +39,8 @@ class HumanAgent(Agent):
         self.balance = generate_human_balance(self.income)
         # This has to be generated using random variables
         self.base_balance = self.balance
-        self.social_class = "high" if self.income >= 2*mean_income else ('low' if self.income < mean_income else 'medium')
+        self.social_class = "high" if self.income >= 2 * \
+            mean_income else ('low' if self.income < mean_income else 'medium')
 
     def offers_requests(self, offers):
         """
@@ -51,14 +52,17 @@ class HumanAgent(Agent):
         offers_requests = []
 
         if self.social_class == "low":
-            offers_requests, self.needs, self.balance = threshold_acceptance_offers_requests_policy(offers, self.income, self.needs, self.base_balance, self.balance, self.purchase_dissatisfaction)
+            offers_requests, self.needs, self.balance = threshold_acceptance_offers_requests_policy(
+                offers, self.income, self.needs, self.base_balance, self.balance, self.purchase_dissatisfaction)
 
         elif self.social_class == "medium":
-            offers_requests, self.needs, self.balance = genetic_offers_requests_policy(offers, self.income, self.needs, self.base_balance, self.balance, self.purchase_dissatisfaction)
+            offers_requests, self.needs, self.balance = genetic_offers_requests_policy(
+                offers, self.income, self.needs, self.base_balance, self.balance, self.purchase_dissatisfaction)
 
         else:
-            offers_requests, self.needs, self.balance = brute_force_offers_requests_policy(offers, self.needs, self.balance)
-            
+            offers_requests, self.needs, self.balance = brute_force_offers_requests_policy(
+                offers, self.needs, self.balance)
+
         return offers_requests
 
     def next_destination_to_move(self, human_location, destination_agents_locations, number_of_needs, distances_from_destination_agents):
@@ -71,15 +75,22 @@ class HumanAgent(Agent):
         best_destination_agent = None  # best destination agent
         best_destination_quality = inf
         minimum_real_distance = inf
-        destination_agents_locations = {destination_agent: destination_agents_locations[destination_agent] for destination_agent in destination_agents_locations.keys(
-        ) if destination_agent not in self.visited_destinations}  # set possible destination to go if not visited
-        destinations_qualities = get_destination_agents_quality(self, destination_agents_locations.keys(), number_of_needs)
-        
+        destination_agents_locations = {destination_agent: destination_agents_locations[destination_agent]
+                                        for destination_agent in destination_agents_locations.keys()
+                                        if destination_agent not in self.visited_destinations}
+        # set possible destination to go if not visited
+        destinations_qualities = get_destination_agents_quality(
+            self, destination_agents_locations.keys(), number_of_needs)
+
         # select best destination agent
         for destination in destination_agents_locations.keys():
-            destination_location = destination_agents_locations[destination] # get destination location
-            destination_distance_to_human = distances_from_destination_agents[destination_location][human_location] # get destination distance
-            destination_quality = destination_distance_to_human * destinations_qualities[destination]
+            # get destination location
+            destination_location = destination_agents_locations[destination]
+            # get destination distance
+            destination_distance_to_human = distances_from_destination_agents[
+                destination_location][human_location]
+            destination_quality = destination_distance_to_human * \
+                destinations_qualities[destination]
 
             if destination_quality < best_destination_quality:
                 best_destination_agent = destination
@@ -109,9 +120,10 @@ class HumanAgent(Agent):
         # time dissatisfaction formula
         time_dissatisfaction = time*normalized_income_rate * \
             TIME_DISSATISFACTION_WEIGHTING_FACTOR
-        
-        purchase_dissatisfaction = self.purchase_dissatisfaction(self.income, self.needs, self.base_balance, self.balance)
 
+        purchase_dissatisfaction = self.purchase_dissatisfaction(
+            self.income, self.needs, self.base_balance, self.balance)
+            
         return time_dissatisfaction + purchase_dissatisfaction
 
     def purchase_dissatisfaction(self, income, needs, base_balance, balance):
@@ -126,15 +138,13 @@ class HumanAgent(Agent):
         # needs dissatisfaction formula
         needs_dissatisfaction = 0
         for tuple in needs:
-            needs_dissatisfaction += normalized_income_rate*tuple[0]*(tuple[2]**2)
+            needs_dissatisfaction += normalized_income_rate * \
+                tuple[0]*(tuple[2]**2)
 
         # money dissatisfaction formula
         money_dissatisfaction = (base_balance-balance)*(
             1 + 1.0/normalized_income_rate)*MONEY_DISSATISFACTION_WEIGHTING_FACTOR
-        # print("{} {} {}\n".format(needs_dissatisfaction, time_dissatisfaction, money_dissatisfaction))
-        time_dissatisfaction *= 0
-        money_dissatisfaction *= 0
-        return needs_dissatisfaction+time_dissatisfaction+money_dissatisfaction
+        return needs_dissatisfaction+money_dissatisfaction
 
     def reset(self, accumulate_flag=True):
         """
@@ -158,7 +168,7 @@ class HumanAgent(Agent):
                     self.needs.append(new_need)
         else:
             self.needs = new_needs
-            
+
         self.needs.sort()
         self.needs.reverse()
 
