@@ -13,7 +13,7 @@ def genetic_offers_requests_policy(offers, income, needs, base_balance, balance,
     """
     population, mean_fitness = generate_initial_population(offers, income, needs, base_balance, balance, goal_function) # generate initial population
     # up to fix
-    number_iterations = 10
+    number_iterations = 50
     
     for i in range(number_iterations): # stopping criteria: number of iterations
         new_population = []
@@ -34,6 +34,8 @@ def genetic_offers_requests_policy(offers, income, needs, base_balance, balance,
         
         if len(new_population) > 0:
             population = new_population # update population
+        else:
+            break
 
     answer = best_individual(population) # get best solution
     offers_requests, needs, balance = answer[0], answer[2], answer[3] # get the updated return variables
