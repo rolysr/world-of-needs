@@ -2,6 +2,7 @@ from testing.human_agents_generator_test import *
 from testing.destination_agents_generator_test import *
 from testing.graph_generator_test import *
 from testing.income_generator_test import *
+from testing.generate_human_names_test import *
 from utils.generator.human_generators.human_generator import generate_human_agents
 from utils.generator.destination_generators.destination_generator import generate_destination_agents
 from environments.environment import *
@@ -16,7 +17,7 @@ if __name__ == "__main__":
     # destination_agents = generate_destination_agents(4, 6)
     # graph_generator_test(human_agents, destination_agents)
     # run_income_generator_test()
-    number_human_agents = 6
+    number_human_agents = 3
     number_destination_agents = 2
     number_needs = 6
     simulation_duration = 100000
@@ -43,8 +44,8 @@ if __name__ == "__main__":
     # # print(env.run_x_times(fun, 30, 10))
 
     # env.print_agents()
-    # env.run()
-    # env.narrate()
+    env.run()
+    env.narrate()
 
     # print(env.run_x_times(fun, 100, 10))
 
@@ -68,8 +69,8 @@ if __name__ == "__main__":
     # # print(env.run_x_times(fun, 30, 10))
 
     # env.print_agents()
-    env.run()
-    env.narrate()
+    # env.run()
+    # env.narrate()
 
     # print(env.run_x_times(fun, 100, 10))
 
