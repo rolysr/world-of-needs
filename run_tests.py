@@ -2,6 +2,7 @@ from testing.human_agents_generator_test import *
 from testing.destination_agents_generator_test import *
 from testing.graph_generator_test import *
 from testing.income_generator_test import *
+from testing.generate_human_names_test import *
 from utils.generator.human_generators.human_generator import generate_human_agents
 from utils.generator.destination_generators.destination_generator import generate_destination_agents
 from environments.environment import *
@@ -16,7 +17,7 @@ if __name__ == "__main__":
     # destination_agents = generate_destination_agents(4, 6)
     # graph_generator_test(human_agents, destination_agents)
     # run_income_generator_test()
-    number_human_agents = 6
+    number_human_agents = 3
     number_destination_agents = 2
     number_needs = 6
     simulation_duration = 100000
@@ -43,8 +44,8 @@ if __name__ == "__main__":
     # # print(env.run_x_times(fun, 30, 10))
 
     # env.print_agents()
-    # env.run()
-    # env.narrate()
+    env.run()
+    env.narrate()
 
     # print(env.run_x_times(fun, 100, 10))
 
@@ -87,7 +88,7 @@ if __name__ == "__main__":
 
     # env.store_offers_density = store_offers_density
 
-    exp = Experiment(env)
+    # exp = Experiment(env)
 
     # def pf_offers_price_factor(dsat, price_factor):
     #     if dsat < 1e6:
@@ -100,7 +101,7 @@ if __name__ == "__main__":
     #     return dsat - 1e6
 
     # exp.run_hill_climbing(None,optimization_target.STORE_DISTRIBUTION, [0.5, 0.5], 40, 40)
-    exp.run_hill_climbing(None,optimization_target.STORE_OFFERS_DENSITY, [1, 1, 1, 1, 1, 1], 40, 40)
+    # exp.run_hill_climbing(None,optimization_target.STORE_OFFERS_DENSITY, [1, 1, 1, 1, 1, 1], 40, 40)
     # exp.run_hill_climbing(None,optimization_target.OFFERS_PRICE_FACTOR, (1,pf_offers_price_factor), 40, 40)
     # exp.run_hill_climbing(None,optimization_target.TOTAL_BUDGET_FACTOR, (1,pf_total_budget_factor), 40, 40)
 

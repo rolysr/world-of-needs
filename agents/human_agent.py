@@ -23,8 +23,9 @@ class HumanAgent(Agent):
         Class that represents a human agent
     """
 
-    def __init__(self, number_of_needs, gini_coef, mean_income, human_needs_density):  # Class constructor
+    def __init__(self, name, number_of_needs, gini_coef, mean_income, human_needs_density):  # Class constructor
         super().__init__()
+        self.name = name # set human name
         # Parameters for the creation of this instance of human agent
         self.number_of_needs = number_of_needs
         self.gini_coef = gini_coef
@@ -104,7 +105,7 @@ class HumanAgent(Agent):
         return best_destination_agent, travel_time
 
     def __str__(self) -> str:
-        return "Human Agent:\n id: {}\n needs: {}\n balance: {}\n speed: {}\n visited_destinations: {}\n".format(self.id, self.needs, self.balance, self.speed, self.visited_destinations)
+        return "Human Agent:\n id: {}\n needs: {}\n balance: {}\n speed: {}\n visited_destinations: {}\n".format(self.name, self.needs, self.balance, self.speed, self.visited_destinations)
 
     def dissatisfaction(self, time):
         """

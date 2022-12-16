@@ -10,13 +10,14 @@ class DestinationAgent(Agent):
         A class to denote a destination agent
     """
 
-    def __init__(self, number_of_needs, store_offers_density, offers_average_price, store_budget):  # class constructor
+    def __init__(self, number_of_needs, store_offers_density, offers_average_price, store_budget, name):  # class constructor
         super().__init__()  # init parent Agent class
         # Parameters for the creation of this instance of destination agent
         self.number_of_needs = number_of_needs
         self.store_offers_density = store_offers_density
         self.offers_average_price = offers_average_price
         self.budget = store_budget
+        self.name = name #set the destination agente name
         # The needs this can satisfy by offers. (need_id, need_available_amout, price)
         self.offers = generate_destination_offers(
             number_of_needs, store_offers_density, offers_average_price, store_budget)
