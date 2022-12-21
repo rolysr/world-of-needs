@@ -1,4 +1,5 @@
 from math import inf
+from random import uniform
 from agents.agent import Agent
 from utils.generator.human_generators.human_balance_generator import generate_human_balance
 from utils.generator.human_generators.human_needs_generator import generate_human_needs
@@ -7,6 +8,7 @@ from utils.generator.human_generators.human_income_generator import generate_hum
 from utils.next_destination_logic.destination_agents_quality import get_destination_agents_quality
 from utils.next_destination_logic.distances_from_destination_agents import get_distances_from_destination_agents
 from utils.offers_requests_policies.brute_force_offers_requests_policy import brute_force_offers_requests_policy
+from utils.offers_requests_policies.csp_offers_requests_policy import csp_offers_requests_policy
 from utils.offers_requests_policies.genetic_offers_requests_policy import genetic_offers_requests_policy
 from utils.offers_requests_policies.threshold_acceptance_offers_requests_policy import threshold_acceptance_offers_requests_policy
 
@@ -57,8 +59,12 @@ class HumanAgent(Agent):
                 offers, self.income, self.needs, self.base_balance, self.balance, self.purchase_dissatisfaction)
 
         elif self.social_class == "medium":
-            offers_requests, self.needs, self.balance = genetic_offers_requests_policy(
-                offers, self.income, self.needs, self.base_balance, self.balance, self.purchase_dissatisfaction)
+            if uniform(0, 1) <= 0.5:
+                offers_requests, self.needs, self.balance = genetic_offers_requests_policy(
+                    offers, self.income, self.needs, self.base_balance, self.balance, self.purchase_dissatisfaction)
+            else:
+                offers_requests, self.needs, self.balance = csp_offers_requests_policy(
+                    offers, self.needs, self.balance)
 
         else:
             offers_requests, self.needs, self.balance = brute_force_offers_requests_policy(
