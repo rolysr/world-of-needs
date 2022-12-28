@@ -1,0 +1,129 @@
+\documentclass[12pt]{amsart}
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[utf8]{inputenc}
+\usepackage{listings}
+\usepackage[pdftex]{hyperref}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{geometry}
+\geometry{
+ letterpaper,
+ total={8.5in,11in},
+left=25mm,
+right=25mm, 
+top=20mm,
+bottom=20mm,
+}
+ \usepackage{setspace}
+\doublespace 
+\usepackage[document]{ragged2e}
+
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+
+\usepackage{blindtext}
+
+\usepackage[spanish]{babel}
+
+\usepackage{graphicx}
+\usepackage{epsfig}
+
+\begin{document}
+
+\begin{center}
+    {\large Universidad de La Habana}  \\ 
+    \vskip 0.1cm
+    {\LARGE \textbf{T\'ITULO DEL TRABAJO}} \\
+    \vskip 2cm
+    {\Large Autores:}\\ 
+    \vspace{0.5cm} 
+    		{\Large\textbf{AUTOR1}} \\
+    		{\normalsize\textit{autor1@estudiantes.matcom.uh.cu}}\\
+			FACULTAD\\
+			\smallskip
+ 			{\Large\textbf{AUTOR2}}\\
+ 			{\normalsize\textit{autor2@estudiantes.matcom.uh.cu}}\\
+ 			FACULTAD \\
+ \smallskip
+ \smallskip
+    {\Large Tutores:\\ 
+    \vspace{0.05cm} 
+    		\textbf{TUTOR1\\ TUTOR2}} \\    
+  \vskip 1.5cm
+  
+  \Large \textbf{Resumen}:
+    Resumen del trabajo (Extensi\'on m\'axima 250 palabras)
+  \end{center}
+  
+
+
+\newpage
+\section{Introducci\'on}
+
+\paragraph{Se expondr\'an los antecedentes del trabajo y se precisar\'an claramente sus objetivos.}
+
+\section{Desarrollo}
+
+\paragraph{Incluir\'a los aspectos metodol\'ogicos y los resultados obtenidos.}
+
+	\subsection{Listas y Descripciones}\label{sub:lists}
+		Para producir listas enumeradas, utilice el siguiente estilo:
+		\begin{enumerate}
+			\item Primer Elemento
+			\item Segundo Elemento
+			\begin {enumerate}
+				\item {Segundo Elemento - Subítem Uno}
+				\item {Segundo Elemento - Subítem Dos}
+			\end {enumerate}
+		\end{enumerate}
+
+		Para producir descripciones, use el siguiente estilo:
+
+		\begin{description}
+			\item [Primer Elemento] con su respectiva descripción.
+			\item [Segundo Elemento] también con su respectiva descripción.
+		\end{description}
+
+	\subsection{Figuras}\label{sub:figures}
+		Para producir cuerpos flotantes (figuras o tablas), asegúrese de numerar
+		y etiquetar correctamente cada figura. Las referencias a las figuras deben
+		estar correctamente etiquetadas. Por ejemplo, véase la Fig. \ref{fig:ex}\ldots
+
+		\begin{figure}[h!]%
+		\begin{center}
+			\begin{tabular}{|c|c|c|} \hline
+			 			& Método 1 	& Método 2 	\\ \hline
+			A 			&  			&  			\\ \hline
+			B			& 			& 			\\ \hline
+			C 			& 			&  			\\ \hline
+			\end{tabular}
+		\caption{Figura de ejemplo. Recuerde especificar el origen de los datos que se muestran. \label{fig:ex}}
+		\end{center}
+		\end{figure}
+
+\section{Conclusiones}
+
+\paragraph{Se refiere al cumplimiento de los objetivos}
+
+\section{Recomendaciones}
+
+\begin{thebibliography}{99}
+	\bibitem{knuth} Donald E. Knuth. \emph{The Art of Computer Programming}.
+		Volume 1: Fundamental Algorithms (3rd~edition), 1997.
+		Addison-Wesley Professional.
+
+	\bibitem{goedel} Kurt Göedel. \emph{Über formal unentscheidbare Sätze der
+		Principia Mathematica und verwandter Systeme, I}.
+		Monatshefte für Mathematik und Physik 38.
+
+	\bibitem{wiki} Wikipedia. URL: \href{http://en.wikipedia.org}
+	  {http://en.wikipedia.org}.
+		Consultado en \today.
+\end{thebibliography}
+\smallskip
+\smallskip
+\textbf{Importante: El artículo debe tener una extensión máxima de 15 páginas, sin contar la portada.}
+\end{document}
