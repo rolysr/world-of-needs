@@ -347,44 +347,20 @@ Las funcionalidades que pueden tener estos son:
 	\captionof{figure}{Comportamiento de la media de la insatisfacción de los agentes humanos por cada iteración.}\label{fig:varresults}
 \end{center}
 
-	\subsection{Listas y Descripciones}\label{sub:lists}
-		Para producir listas enumeradas, utilice el siguiente estilo:
-		\begin{enumerate}
-			\item Primer Elemento
-			\item Segundo Elemento
-			\begin {enumerate}
-				\item {Segundo Elemento - Subítem Uno}
-				\item {Segundo Elemento - Subítem Dos}
-			\end {enumerate}
-		\end{enumerate}
+\subsection{Ejecución de los experimentos:}
 
-		Para producir descripciones, use el siguiente estilo:
+\paragraph{Luego de comprobar la ejecución de una instancia de la clase \textit{Enviromnet}, procederemos a inicializar un objeto de tipo \textit{Experiment} co el cual podamos realizar las optimizaciones propuestas en este trabajo:}
 
-		\begin{description}
-			\item [Primer Elemento] con su respectiva descripción.
-			\item [Segundo Elemento] también con su respectiva descripción.
-		\end{description}
-
-	\subsection{Figuras}\label{sub:figures}
-		Para producir cuerpos flotantes (figuras o tablas), asegúrese de numerar
-		y etiquetar correctamente cada figura. Las referencias a las figuras deben
-		estar correctamente etiquetadas. Por ejemplo, véase la Fig. \ref{fig:ex}\ldots
-
-		\begin{figure}[h!]%
-		\begin{center}
-			\begin{tabular}{|c|c|c|} \hline
-			 			& Método 1 	& Método 2 	\\ \hline
-			A 			&  			&  			\\ \hline
-			B			& 			& 			\\ \hline
-			C 			& 			&  			\\ \hline
-			\end{tabular}
-		\caption{Figura de ejemplo. Recuerde especificar el origen de los datos que se muestran. \label{fig:ex}}
-		\end{center}
-		\end{figure}
+\begin {enumerate}
+				\item {STORE\_OFFERS\_DENSITY:  En este caso, el valor inicial de \textit{store\_offers\_density} fue $[1, 1, 1, 1, 1, 1]$ con evaluación $1330.30$. La media y la varianza obtenidas para la insatisfacción fueron $1330.30$ y $317205.72$. Al finalizar la optimización, el parámetro estudiado terminó con el valor $[1.33, 1.60, 2.03, 0.17, 0.08, 0.76]$ con una evaluación de $1238.58$ de media de insatisfacción.}
+				\item {OFFERS\_PRICE\_FACTOR: El parámetro \textit{store\_offers\_density} comienza con valor $1$ y un factor de penalización de $2.71$. Al finalizar la optimización, \textit{store\_offers\_density} valía $4.73$ mientras que la penalización era de $1.23$. Es importante recordar que este factor hace referencia al valor que se multiplica al precio base de los productos. Como se observa en los resultados, al aumentar el costo de los productos aumenta la insatisfacción, pero la función de penalidad implementada disminuye su valor, de esta forma se explican los resultados obtenidos.}
+				\item {TOTAL\_BUDGET\_FACTOR: Es conocido que este factor hace referencia al multiplicador del presupuesto total de los agentes destino. Este comenzó con valor $1$ y un factor de penalización de $2.71$. Al finalizar la optimización, el parámetro tenía un valor de $0.086$ mientras que la penalización era de $1.09$. Como se observa en los resultados, al disminuir la oferta de productos aumenta la insatisfacción, pero la función de penalidad implementada disminuye su valor, de esta forma se explican los resultados obtenidos.}
+				\item {STORE\_DISTRIBUTION: En este caso el \textit{Hill Climbing} optimiza sobre el parámetro \textit{store\_distribution}, donde se realizan $40$ iteraciones y en cada una se ejecuta $40$ veces el entorno. La media y la varianza obtenidas para la insatisfacción fueron $1390.97$ y $254075.39$. El estado inicial fue establecido con el valor $[0.5, 0.5]$ para el parámetro \textit{store\_distribution}, con una insatisfacción de $1390.97$, mientras que el estado final estableció que el valor óptimo de \textit{store\_distribution} es $[0.5, 0.5]$, con una insatisfacción de $1262.98$.}
+\end {enumerate}
 
 \section{Conclusiones}
 
-\paragraph{Se refiere al cumplimiento de los objetivos}
+\paragraph{Con la realización de este proyecto se logró diseñar un modelo capaz de simular un entorno donde un conjunto de personas se traslada hacia destinos posibles con el fin de satisfacer sus necesidades. Además, gracias a los resultados del análisis estadístico sobre la insatisfacción de los agentes humanos, se pudo probar la calidad de la implementación de los entornos. Finalmente, con la ejecución de los experimentos, se demostró la posibilidad de optimizar factores como la distribución de ofertas en las tiendas y el gasto del presupuesto inicial con una complejidad computacional asumible.}
 
 \section{Recomendaciones}
 
