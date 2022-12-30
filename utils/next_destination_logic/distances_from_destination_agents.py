@@ -1,4 +1,4 @@
-from utils.graph.dijkstra import dijkstra
+from utils.graph.algorithms.dijkstra import dijkstra
 
 
 def get_distances_from_destination_agents(destination_agents_locations, graph):

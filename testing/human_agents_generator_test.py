@@ -1,7 +1,7 @@
 from agents.human_agent import HumanAgent
 from utils.generator.human_generators.human_generator import generate_human_agents
 
-def run_human_agents_generator_test(number_of_needs):
+def run_human_agents_generator_test(name, number_of_needs):
     """
         Destination agents generator test
         Arguments:
@@ -9,7 +9,7 @@ def run_human_agents_generator_test(number_of_needs):
     """
 
     # create an instance of a destination agent
-    agent = HumanAgent(number_of_needs)
+    agent = HumanAgent(name, number_of_needs)
 
     print(agent)
 

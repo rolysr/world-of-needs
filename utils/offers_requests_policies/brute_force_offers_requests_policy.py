@@ -17,7 +17,7 @@ def brute_force_offers_requests_policy(offers, needs, balance):
                 need_amount, offer_amount, price = need[2], offer[1], offer[2]
                 # product amount to be adquired
                 amount_to_buy = min(
-                    need_amount, offer_amount, balance//price)
+                    need_amount, offer_amount, balance/price)
 
                 if amount_to_buy > 0:  # if human is going to get some need then update his internal state
                     needs[j] = (need[0], need[1],

@@ -65,3 +65,6 @@ El comportamiento de los agentes, la lógica bajo la cual deciden a dónde y có
 ## Uso de la Simulación:
 El comportamiento de las colas, servidores u otras formas de gestión de los centros de destino, el conjunto de agentes en general, el tiempo transcurrido etc. Pueden ser tratados con teoría de colas, generación de variables aleatorias con varias distribuciones y simulación basada en agentes.
 
+## Requerimientos:
+Revisar el archivo [requirements.txt](https://github.com/rolysr/world-of-needs/requirements.txt) e instalar dichas dependencias con sus versiones estables para el 30 de enero de 2022.
+
