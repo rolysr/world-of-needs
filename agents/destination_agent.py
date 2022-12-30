@@ -30,7 +30,7 @@ class DestinationAgent(Agent):
         self.queue = Queue()  # The queue of people waiting to be attended
 
     def attention_time(self):
-        """Attention time for a given client is Poisson-distributed"""
+        """Attention time for a given client"""
         return generate_destination_attention_time()
 
     def process_offers_requests(self, offers_requests):
