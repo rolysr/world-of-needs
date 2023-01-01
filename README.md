@@ -60,11 +60,62 @@ Una vez finalizado el tiempo de ejecución del sistema, los agentes detienen su 
 Uno de los objetivos de las simulaciones es lograr llevar a cabo procesos a pequeña escala, de bajo costo, rápidos y eficientes que permitan analizar de manera objetiva una serie de sucesos que serían muy difíciles de llevar a la práctica. Por lo tanto, se espera con esta simulación dar respuestas a cuestiones como: ¿De qué forma se pudiera distribuir un presupuesto inicial para construir lugares de destinos en un ambiente dado con el fin de satisfacer la mayor cantidad de necesidades de los agentes en este? ¿Cuánto presupuesto haría falta para satisfacer la necesidad de todos? ¿Cuál es el mínimo presupuesto para satisfacer a una cantidad especificada de ciudadanos? Por lo tanto, podemos ver inicialmente la utilidad de esta propuesta.
 
 ## Uso de la Inteligencia Artificial: 
-El comportamiento de los agentes, la lógica bajo la cual deciden a dónde y cómo moverse, la forma de responder las preguntas en la sección anterior son ejemplos de problemas que pueden ser resueltos a partir de algoritmos e búsqueda con heurísticas, satisfacción de restricciones e incluso algoritmos genéticos.
+El comportamiento de los agentes, la lógica bajo la cual deciden a dónde y cómo moverse, la forma de responder las preguntas en la sección anterior son ejemplos de problemas que pueden ser resueltos a partir de algoritmos de búsqueda con heurísticas, satisfacción de restricciones e incluso algoritmos genéticos.
 
 ## Uso de la Simulación:
 El comportamiento de las colas, servidores u otras formas de gestión de los centros de destino, el conjunto de agentes en general, el tiempo transcurrido etc. Pueden ser tratados con teoría de colas, generación de variables aleatorias con varias distribuciones y simulación basada en agentes.
 
 ## Requerimientos:
-Revisar el archivo [requirements.txt](https://github.com/rolysr/world-of-needs/requirements.txt) e instalar dichas dependencias con sus versiones estables para el 30 de enero de 2022.
+Revisar el archivo [requirements.txt](https://github.com/rolysr/world-of-needs/requirements.txt) e instalar dichas dependencias con sus versiones estables para el 30 de diciembre de 2022.
 
+## Ejemplo de ejecución de un entorno:
+Para ejecutar un entorno es necesario inicializar una serie de parámetros básicos. Ante cualquier duda sobre estos, se recomienda revisar la [documentación](https://github.com/rolysr/world-of-needs/docs/won_report.pdf).
+```python
+# Inicialización de parámetros
+number_human_agents = 3
+number_destination_agents = 2
+number_needs = 6
+simulation_duration = 100000
+gini_coef = 0.2
+mean_income = 400
+human_needs_density = [0.1, 0.1, 0.1, 2, 2, 2]
+offers_average_price = [50, 50, 50, 50, 50, 50]
+store_offers_density = [1, 1, 1, 1, 1, 1]
+stores_total_budget = 1800
+store_distribution = [0.5, 0.5]
+
+# Creación de una instancia de un entorno
+env = Environment(number_human_agents, number_destination_agents,
+                number_needs, simulation_duration, gini_coef, mean_income, human_needs_density, offers_average_price, 
+                store_offers_density, stores_total_budget, store_distribution)
+
+# Ejecución del entorno
+env.run()
+```
+
+## Ejemplo de ejecución de un experimento:
+Para la ejecución de un experimento, es posible utilizar una instancia de un entorno previamente creado. Ante cualquier duda respecto a los métodos de optimización, se recomienda revisar la [documentación](https://github.com/rolysr/world-of-needs/docs/won_report.pdf).
+```python
+# Ejecución del entorno
+exp = Experiment(env)
+
+# Funciones de penalización
+def pf_offers_price_factor(dsat, price_factor):
+    if dsat < 1e6:
+        return math.exp(1/price_factor)
+    return dsat - 1e6
+
+def pf_total_budget_factor(dsat, budget_factor):
+    if dsat < 1e6:
+        return math.exp(budget_factor)
+    return dsat - 1e6
+
+# Ejecución de las funciones de optimización
+exp.run_hill_climbing(None,optimization_target.STORE_DISTRIBUTION, [0.5, 0.5], 40, 40)
+
+exp.run_hill_climbing(None,optimization_target.STORE_OFFERS_DENSITY, [1, 1, 1, 1, 1, 1], 40, 40)
+
+exp.run_hill_climbing(None,optimization_target.OFFERS_PRICE_FACTOR, (1,pf_offers_price_factor), 40, 40)
+
+exp.run_hill_climbing(None,optimization_target.TOTAL_BUDGET_FACTOR, (1,pf_total_budget_factor), 40, 40)
+```
