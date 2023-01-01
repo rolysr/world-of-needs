@@ -66,10 +66,10 @@ El comportamiento de los agentes, la lógica bajo la cual deciden a dónde y có
 El comportamiento de las colas, servidores u otras formas de gestión de los centros de destino, el conjunto de agentes en general, el tiempo transcurrido etc. Pueden ser tratados con teoría de colas, generación de variables aleatorias con varias distribuciones y simulación basada en agentes.
 
 ## Requerimientos:
-El proyecto fue implementado utilizando el lenguaje de programación $Python$ en su versión $3.9$. Para el correcto funcionamiento del mismo se recomienda instalar las dependencias especificadas en el archivo [requirements.txt](https://github.com/rolysr/world-of-needs/requirements.txt) en sus versiones estables más recientes para la fecha del 30 de diciembre de 2022.
+El proyecto fue implementado utilizando el lenguaje de programación $Python$ en su versión $3.9$. Para el correcto funcionamiento del mismo se recomienda instalar las dependencias especificadas en el archivo [requirements.txt](https://github.com/rolysr/world-of-needs/blob/main/requirements.txt) en sus versiones estables más recientes para la fecha del 30 de diciembre de 2022.
 
 ## Ejemplo de ejecución de un entorno:
-Para ejecutar un entorno es necesario inicializar una serie de parámetros básicos. Ante cualquier duda sobre estos, se recomienda revisar la [documentación](https://github.com/rolysr/world-of-needs/docs/won_report.pdf).
+Para ejecutar un entorno es necesario inicializar una serie de parámetros básicos. Ante cualquier duda sobre estos, se recomienda revisar la [documentación](https://github.com/rolysr/world-of-needs/blob/main/docs/won_report.pdf).
 ```python
 # Inicialización de parámetros
 number_human_agents = 3
@@ -94,7 +94,7 @@ env.run()
 ```
 
 ## Ejemplo de ejecución de un experimento:
-Para la ejecución de un experimento, es posible utilizar una instancia de un entorno previamente creado. Ante cualquier duda respecto a los métodos de optimización, se recomienda revisar la [documentación](https://github.com/rolysr/world-of-needs/docs/won_report.pdf).
+Para la ejecución de un experimento, es posible utilizar una instancia de un entorno previamente creado. Ante cualquier duda respecto a los métodos de optimización, se recomienda revisar la [documentación](https://github.com/rolysr/world-of-needs/blob/main/docs/won_report.pdf).
 ```python
 # Ejecución del entorno
 exp = Experiment(env)
