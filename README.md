@@ -96,7 +96,7 @@ env.run()
 ## Ejemplo de ejecución de un experimento:
 Para la ejecución de un experimento, es posible utilizar una instancia de un entorno previamente creado. Ante cualquier duda respecto a los métodos de optimización, se recomienda revisar la [documentación](https://github.com/rolysr/world-of-needs/blob/main/docs/won_report.pdf).
 ```python
-# Ejecución del entorno
+# Inicialización del experimento a partir de una instancia de un entorno
 exp = Experiment(env)
 
 # Funciones de penalización
