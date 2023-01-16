@@ -236,7 +236,7 @@ class Experiment:
                                         price for price in base_offers_average_price]
 
             delta_eval = eval - penalty_function(env.run_x_times(
-                dsat_evaluator, eval_iterations, 10), price_factor)
+                dsat_evaluator, eval_iterations, 10), new_price_factor)
 
             if delta_eval > EPS:  # improve!
                 price_factor = new_price_factor
@@ -272,7 +272,7 @@ class Experiment:
             env.stores_total_budget = new_budget_factor * base_stores_total_budget
 
             delta_eval = eval - penalty_function(env.run_x_times(
-                dsat_evaluator, eval_iterations, 10), budget_factor)
+                dsat_evaluator, eval_iterations, 10), new_budget_factor)
 
             if delta_eval > EPS:  # improve!
                 budget_factor = new_budget_factor
